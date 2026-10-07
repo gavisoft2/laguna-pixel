@@ -28,3 +28,18 @@ nav{position:sticky;bottom:max(8px,env(safe-area-inset-bottom));z-index:5;margin
 
 /* Top-down river and vertical capture control */
 .river-screen{position:relative;height:100dvh;min-height:600px;padding:12px;display:flex;flex-direction:column}.river-screen header{flex:none}.river-heading{margin-bottom:10px}.river-screen canvas{height:auto;min-height:0;flex:1;width:100%;border-radius:12px}.river-controls{padding:12px;margin-top:10px;flex:none}.river-controls h3{font-size:18px}.river-controls p{margin:7px 0;font-size:12px}.fight-track{position:absolute;right:22px;top:28%;height:40%;width:40px;margin:0;background:#fbf0d6c9;border:3px solid #ad8654;border-radius:6px;overflow:hidden}#zone{top:auto;bottom:36%;left:3px;right:3px;width:auto;height:28%;background:#6ec994}#marker{left:50%;top:auto;bottom:50%;transform:translate(-50%,50%);font-size:22px;color:#aa693d;text-shadow:1px 1px white}.catch-card{position:absolute;top:38%;left:12%;right:12%;background:#fbefcd;border:4px solid #bc955c;border-radius:12px;padding:24px 16px;box-shadow:0 15px 40px #123e5c99;text-align:center;color:#4d3e2b;z-index:4}.catch-card small,.catch-card strong,.catch-card span{display:block}.catch-card small{font-size:10px;letter-spacing:2px;color:#68876c}.catch-card strong{font-size:25px;margin:15px 0 10px}.catch-card span{font-size:13px}.catch-card button{margin-top:18px;width:100%}
+
+/* Reference-style capture: hold/release, fish sprite, adjacent progress gauge. */
+.is-fighting .fight-track{right:35px;top:28%;height:42%;width:58px;background:linear-gradient(90deg,#fff2d6b8,#f8eed3dc,#fff2d6b8);border:3px solid #946e44;box-shadow:inset 0 0 0 3px #f2d7a5;border-radius:10px}
+#marker{width:46px;height:29px;display:block;text-shadow:none;z-index:2;pointer-events:none}
+#marker svg{width:100%;height:100%;filter:drop-shadow(0 2px 1px #183c4b66)}
+#zone{background:#56c59b88;border-color:#8bd9b4aa;border-radius:8px}
+#zone.inside{background:#55cca9b3;box-shadow:0 0 10px #75dbb8aa}
+.is-fighting #combat label{position:absolute;right:14px;top:28%;height:42%;width:13px;font-size:0;border:2px solid #806339;border-radius:8px;background:#edddba;overflow:hidden}
+.is-fighting #combat label:after{content:'';position:absolute;bottom:0;left:0;right:0;height:var(--capture,35%);background:linear-gradient(90deg,#65c835,#a5de42)}
+.is-fighting progress{visibility:hidden}
+.is-fighting .river-controls{background:transparent;border:0;padding:8px 0;margin-top:5px}
+.is-fighting .river-controls h3,.is-fighting .river-controls p{display:none}
+.is-fighting #tap{background:linear-gradient(#37c696,#169b76);border:3px solid #a58245;box-shadow:0 4px 0 #66532d;font-family:monospace;font-size:20px;min-height:68px;text-transform:uppercase;touch-action:none}
+.river-screen{max-width:560px}
+@media(max-width:1100px){.river-screen{max-width:none}}
