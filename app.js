@@ -19,13 +19,13 @@ for(let i=0;i<17;i++){const x=(i*29)%240,y=191+(i%3)*7;ctx.fillStyle=i%3?'#279b8
 for(let i=0;i<6;i++){const x=8+i*45,y=204-i%3*6;ctx.fillStyle=i%2?'#d38496':'#d8aa68';ctx.fillRect(x,y-12,3,21);ctx.fillRect(x-5,y-6,12,3);ctx.fillRect(x-5,y-12,3,7);ctx.fillRect(x+5,y-17,3,12);}
 state.fish.slice(0,40).forEach((id,i)=>{const phase=(i*47+t*(7+i%4))%370;const right=phase<185;const x=26+(right?phase:370-phase),y=58+(i*29)%104+Math.sin(t*.7+i)*3;ctx.save();ctx.translate(Math.round(x),Math.round(y));if(!right)ctx.scale(-1,1);
 
-ctx.scale([1.12,1,1.18,1.02,1.35][id]||1,[.9,1.22,1.04,1.14,1.05][id]||1);
+const pondRect=canvas.getBoundingClientRect();const shapeCorrection=pondRect.height?pondRect.width*220/(pondRect.height*240):1;ctx.scale([1.28,1.08,1.25,1.1,1.4][id]||1,shapeCorrection*([.85,1.05,.95,1.04,.92][id]||1));
 const palettes=[['#354f43','#879d6e','#e4e9cf'],['#153d62','#55afc1','#d2eef0'],['#423353','#a080ac','#eeddd7'],['#25503e','#76a877','#deebbc'],['#735020','#d7ad52','#fff2ce']];
 const pal=palettes[id]||palettes[0],sway=Math.sin(t*4+i)*2;
 ctx.fillStyle='#04374733';ctx.beginPath();ctx.ellipse(0,13,19,2,0,0,Math.PI*2);ctx.fill();
 function fin(points){ctx.fillStyle=pal[1];ctx.beginPath();points.forEach(([x,y],j)=>j?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fill();}
 ctx.globalAlpha=.75;fin([[-12,0],[-23,-9+sway],[-20,sway],[-23,9+sway]]);fin([[-7,-3],[-4,-11],[2,-9],[8,-4]]);fin([[-1,5],[3,11],[10,8],[9,4]]);ctx.globalAlpha=1;
-const body=ctx.createLinearGradient(0,-7,0,8);body.addColorStop(0,pal[0]);body.addColorStop(.35,pal[1]);body.addColorStop(.7,pal[1]);body.addColorStop(1,pal[2]);
+const body=ctx.createLinearGradient(0,-7,0,8);body.addColorStop(0,pal[0]);body.addColorStop(.3,pal[1]);body.addColorStop(.48,pal[2]);body.addColorStop(.6,pal[1]);body.addColorStop(1,pal[2]);
 ctx.fillStyle=body;ctx.beginPath();ctx.moveTo(-14,0);ctx.bezierCurveTo(-7,-9,10,-10,18,-3);ctx.quadraticCurveTo(22,-1,21,1);ctx.quadraticCurveTo(18,9,3,8);ctx.bezierCurveTo(-7,8,-10,4,-14,0);ctx.fill();ctx.strokeStyle=pal[0];ctx.lineWidth=.6;ctx.stroke();
 ctx.save();ctx.beginPath();ctx.ellipse(0,0,13,6,0,0,Math.PI*2);ctx.clip();
 for(let row=0;row<5;row++)for(let col=0;col<9;col++){const x=-11+col*2.8+(row%2)*1.4,y=-5+row*2.2;ctx.strokeStyle=row<2?'#173e424d':'#eff7ce55';ctx.lineWidth=.45;ctx.beginPath();ctx.arc(x,y,1.5,-.7,.7);ctx.stroke();}
@@ -35,12 +35,22 @@ ctx.globalAlpha=.7;fin([[3,1],[6,3],[2,8+sway*.5],[-1,6]]);ctx.globalAlpha=1;
 ctx.strokeStyle='#eaf1cb77';ctx.lineWidth=.45;for(let j=0;j<3;j++){ctx.beginPath();ctx.moveTo(-13,0);ctx.lineTo(-21,(-6+j*6)+sway);ctx.stroke();}
 ctx.fillStyle='#dece99';ctx.beginPath();ctx.arc(16,-2,2.2,0,Math.PI*2);ctx.fill();ctx.fillStyle='#122731';ctx.beginPath();ctx.arc(16.5,-2,1.2,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(17,-2.6,.5,0,Math.PI*2);ctx.fill();ctx.strokeStyle=pal[0];ctx.beginPath();ctx.moveTo(18,3);ctx.lineTo(21,2);ctx.stroke();
 const gloss=ctx.createLinearGradient(0,-6,0,2);gloss.addColorStop(0,'#ffffff99');gloss.addColorStop(1,'#ffffff00');ctx.fillStyle=gloss;ctx.beginPath();ctx.moveTo(-9,-1);ctx.bezierCurveTo(-4,-7,9,-7,13,-3);ctx.quadraticCurveTo(3,-4,-9,-1);ctx.fill();
-// Anime eye: iris, pupil, bright catchlights, and a defined upper lid.
-ctx.fillStyle='#faf4df';ctx.beginPath();ctx.ellipse(16,-1.8,2.6,2.9,-.15,0,Math.PI*2);ctx.fill();ctx.fillStyle=['#c89946','#478cbb','#b784b1','#629859','#daac3e'][id];ctx.beginPath();ctx.ellipse(16.6,-1.6,1.8,2.1,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#152c39';ctx.beginPath();ctx.ellipse(17,-1.6,.9,1.6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(17,-2.8,.75,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(16.1,-.7,.35,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#23363acc';ctx.lineWidth=.65;ctx.beginPath();ctx.ellipse(16,-1.8,2.6,2.9,-.15,Math.PI,Math.PI*2);ctx.stroke();
+
+// Natural eye proportions: dark iris with a restrained wet highlight.
+ctx.fillStyle='#aaa66e';ctx.beginPath();ctx.arc(16,-1.8,1.45,0,Math.PI*2);ctx.fill();
+ctx.fillStyle='#132a29';ctx.beginPath();ctx.arc(16.2,-1.8,1,0,Math.PI*2);ctx.fill();
+ctx.fillStyle='#e7f4f0';ctx.beginPath();ctx.arc(16.55,-2.2,.34,0,Math.PI*2);ctx.fill();
+ctx.strokeStyle=pal[0];ctx.lineWidth=.45;ctx.beginPath();ctx.arc(16,-1.8,1.6,0,Math.PI*2);ctx.stroke();
+// Gill folds and subtle colored lateral stripe.
+ctx.strokeStyle='#263f3d66';ctx.lineWidth=.4;for(let j=0;j<3;j++){ctx.beginPath();ctx.moveTo(11+j*.65,-3.5);ctx.quadraticCurveTo(8+j*.65,1,11+j*.65,5);ctx.stroke();}
+if(id===0){ctx.strokeStyle='#bfa2a080';ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(-10,1);ctx.quadraticCurveTo(0,.1,8,1.5);ctx.stroke();}
+const belly=ctx.createLinearGradient(0,3,0,8);belly.addColorStop(0,'#edf0d000');belly.addColorStop(1,'#f2f2db9c');ctx.fillStyle=belly;ctx.beginPath();ctx.moveTo(-10,3);ctx.quadraticCurveTo(2,8,13,4);ctx.quadraticCurveTo(5,11,-10,3);ctx.fill();
+ctx.strokeStyle=pal[0]+'99';ctx.lineWidth=.35;
+for(let j=0;j<7;j++){ctx.beginPath();ctx.moveTo(-13,0);ctx.lineTo(-21,(-7+j*2.2)+sway);ctx.stroke();}
 // Fine rays through the dorsal fin and glimmering lateral line.
 ctx.strokeStyle=pal[2]+'88';ctx.lineWidth=.35;for(let j=0;j<5;j++){ctx.beginPath();ctx.moveTo(-5+j*2,-4);ctx.lineTo(-4+j*1.8,-9+j*.45);ctx.stroke();}
 ctx.strokeStyle='#edf7da77';ctx.beginPath();ctx.moveTo(-10,1);ctx.quadraticCurveTo(0,-1,9,1);ctx.stroke();
-if(id===2||id===4){ctx.globalAlpha=.6;ctx.fillStyle=id===4?'#fff2a2':'#edbeff';for(let j=0;j<4;j++){const x=-6+j*4,y=Math.sin(t*1.5+j)*2;ctx.fillRect(x,y,.8,2);ctx.fillRect(x-.6,y+.6,2,.6);}ctx.globalAlpha=1;}
+if(id===2||id===4){ctx.globalAlpha=.6;ctx.fillStyle=id===4?'#fff2a2':'#edbeff';for(let j=0;j<4;j++){const x=-6+j*4,y=Math.sin(t*1.5+j)*2;ctx.beginPath();ctx.arc(x,y,.45,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;}
 
 ctx.restore();});
 ctx.fillStyle='#9ee4de88';for(let i=0;i<12;i++){const x=i*21+Math.sin(t+i)*2,y=210-((t*7+i*19)%175);ctx.strokeStyle='#a6e7e466';ctx.strokeRect(Math.round(x),Math.round(y),3,3);}if(!reduced)requestAnimationFrame(draw);}draw(0);
