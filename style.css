@@ -64,3 +64,21 @@ nav{position:sticky;bottom:max(8px,env(safe-area-inset-bottom));z-index:5;margin
 .wallet-header h2{margin:0;font-size:23px}.wallet-header button{background:#b66c54;min-width:44px;font-size:18px}
 #wallet-panel{overflow-y:auto;overscroll-behavior:contain;padding:18px;-webkit-overflow-scrolling:touch}
 #wallet-panel h2{font-size:19px}#wallet-panel .notice{padding:10px;background:#e2d4b4;border-radius:8px}#wallet-panel p{font-size:12px}
+
+/* Compact wallet popup. */
+.wallet-overlay{padding:24px 20px}
+.wallet-dialog{width:92%;max-width:400px;max-height:72dvh;border-radius:16px}
+.wallet-header{padding:10px 14px}
+.wallet-header h2{font-size:20px}
+.wallet-header button{min-height:36px;min-width:36px;padding:6px;font-size:16px}
+#wallet-panel{padding:12px 14px}
+#wallet-panel h2{font-size:17px;margin-bottom:5px}
+#wallet-panel p{font-size:11px;margin:8px 0}
+#wallet-panel .notice{padding:8px}
+#wallet-panel .payment-preview{padding:10px;margin:8px 0}
+#wallet-panel .payment-preview h3{font-size:15px;margin:8px 0}
+#wallet-panel .cards{gap:6px;margin-top:8px}
+#wallet-panel .cards button{min-height:40px;padding:9px 4px}
+#wallet-panel .payment-summary{padding:10px;font-size:14px;margin:8px 0}
+#wallet-panel button{font-size:12px}
+#wallet-panel input[type=number],#wallet-panel input[type=text],#wallet-panel select{min-height:40px;padding:8px;margin:6px 0}
