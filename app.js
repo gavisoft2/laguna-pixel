@@ -17,7 +17,37 @@ ctx.fillStyle='#14617a';ctx.fillRect(0,182,240,38);ctx.fillStyle='#877c65';ctx.f
 for(let side=0;side<2;side++)for(let i=0;i<5;i++){const x=side?218-i*5:-9+i*3,y=135+i*15;ctx.fillStyle=i%2?'#355f6b':'#456f74';ctx.fillRect(x,y,27,14);ctx.fillStyle='#7e9c8a';ctx.fillRect(x,y,25,3);}
 for(let i=0;i<17;i++){const x=(i*29)%240,y=191+(i%3)*7;ctx.fillStyle=i%3?'#279b8e':'#60ba8c';ctx.fillRect(x,y-18-i%19,3,39);ctx.fillRect(x-4,y-12,5,3);ctx.fillRect(x+2,y-23,5,3);}
 for(let i=0;i<6;i++){const x=8+i*45,y=204-i%3*6;ctx.fillStyle=i%2?'#d38496':'#d8aa68';ctx.fillRect(x,y-12,3,21);ctx.fillRect(x-5,y-6,12,3);ctx.fillRect(x-5,y-12,3,7);ctx.fillRect(x+5,y-17,3,12);}
-state.fish.slice(0,40).forEach((id,i)=>{const phase=(i*47+t*(7+i%4))%370;const right=phase<185;const x=26+(right?phase:370-phase),y=58+(i*29)%104+Math.sin(t*.7+i)*3;ctx.save();ctx.translate(Math.round(x),Math.round(y));if(!right)ctx.scale(-1,1);ctx.fillStyle='#033f6566';ctx.fillRect(-8,13,23,3);ctx.fillStyle='#263f50';ctx.fillRect(-7,-4,19,12);ctx.fillRect(-10,-1,25,6);ctx.fillStyle=species[id].color;ctx.fillRect(-7,-3,18,10);ctx.fillRect(-9,0,23,4);ctx.fillRect(-14,-3,4,10);ctx.fillRect(-11,0,3,4);ctx.fillStyle='#fff2cb';ctx.fillRect(-4,4,12,3);ctx.fillStyle='#ad7e48';ctx.fillRect(-4,-6,7,3);ctx.fillRect(-5,0,2,2);ctx.fillRect(0,-2,2,2);ctx.fillStyle='#fff';ctx.fillRect(7,-3,5,5);ctx.fillStyle='#213248';ctx.fillRect(10,-2,2,3);ctx.fillStyle='#bd765b';ctx.fillRect(12,3,3,2);ctx.restore();});
+state.fish.slice(0,40).forEach((id,i)=>{const phase=(i*47+t*(7+i%4))%370;const right=phase<185;const x=26+(right?phase:370-phase),y=58+(i*29)%104+Math.sin(t*.7+i)*3;ctx.save();ctx.translate(Math.round(x),Math.round(y));if(!right)ctx.scale(-1,1);
+// Layered pixel silhouettes, species-specific colors and articulated fins.
+const palettes=[
+ ['#526d55','#9caf78','#dce2ba','#597e6c'],
+ ['#245e7b','#69bfd0','#d6efe3','#35859e'],
+ ['#493d78','#aa86c2','#e9d3d7','#8061a5'],
+ ['#356d51','#79b784','#d5e7ac','#419174'],
+ ['#8b6335','#e5bd63','#fff0bc','#c18b3d']
+];const pal=palettes[id]||palettes[0];const tail=Math.round(Math.sin(t*5+i)*2);
+ctx.fillStyle='#033f6555';ctx.fillRect(-11,13,31,3);
+ctx.fillStyle=pal[0];
+ctx.fillRect(-10,-4,20,11);ctx.fillRect(-6,-6,14,15);
+ctx.fillRect(9,-3,9,9);ctx.fillRect(17,-1,3,4);
+ctx.fillRect(-17,-5+tail,3,13);ctx.fillRect(-14,-3+tail,4,9);
+ctx.fillStyle=pal[3];ctx.fillRect(-16,-3+tail,2,9);
+ctx.fillRect(-4,-10,3,5);ctx.fillRect(-1,-8,8,3);
+ctx.fillRect(1,7,7,4);ctx.fillRect(4,9,3,3);
+ctx.fillStyle=pal[1];ctx.fillRect(-9,-2,21,7);ctx.fillRect(-5,-4,14,11);
+ctx.fillRect(10,-1,7,5);
+ctx.fillStyle=pal[2];ctx.fillRect(-4,4,15,3);ctx.fillRect(0,7,6,1);
+ctx.fillStyle=pal[0];ctx.fillRect(8,-2,1,7);ctx.fillRect(10,1,1,4);
+for(let row=0;row<3;row++)for(let col=0;col<5;col++){
+ ctx.fillStyle=(row+col)%2?pal[0]:pal[2];
+ ctx.globalAlpha=.45;ctx.fillRect(-7+col*3+(row%2),-2+row*2,1,1);
+}ctx.globalAlpha=1;
+ctx.fillStyle=pal[3];ctx.fillRect(-1,2,4,2);ctx.fillRect(-3,3,3,3+Math.round(Math.sin(t*4+i)));
+ctx.fillStyle='#f6efd4';ctx.fillRect(13,-2,4,4);
+ctx.fillStyle='#142c34';ctx.fillRect(15,-1,2,2);
+ctx.fillStyle='#ffffff';ctx.fillRect(15,-1,1,1);
+ctx.fillStyle=pal[0];ctx.fillRect(18,3,2,1);
+ctx.restore();});
 ctx.fillStyle='#9ee4de88';for(let i=0;i<12;i++){const x=i*21+Math.sin(t+i)*2,y=210-((t*7+i*19)%175);ctx.strokeStyle='#a6e7e466';ctx.strokeRect(Math.round(x),Math.round(y),3,3);}if(!reduced)requestAnimationFrame(draw);}draw(0);
 
 let session=null;
