@@ -7,7 +7,7 @@ const fmt=n=>n.toLocaleString('es',{maximumFractionDigits:2});function save(){tr
 function render(){update();document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));const panel=$('panel');if(tab==='fish'){panel.innerHTML='<h2>Elige dónde pescar</h2>'+zonePicker()+'<p>'+state.baits[zone]+' cebos de '+zones[zone].name+' disponibles.</p><button id="go">Ir a '+zones[zone].name+'</button>';$('go').onclick=openRiver;bindZones();}else if(tab==='shop'){panel.innerHTML='<h2>Tienda de cebos</h2>'+zonePicker()+'<p>Cebos exclusivos de '+zones[zone].name+'. Cada intento consume uno.</p><div class="cards">'+[1,5,11].map(n=>`<button data-buy="${n}">${n} cebos<small>${fmt(baitPrice(zone,n))} FIN</small></button>`).join('')+'</div>';bindZones();panel.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>action(()=>{const n=+b.dataset.buy,cost=baitPrice(zone,n);if(state.fin<cost)throw Error('FIN insuficientes');state.fin-=cost;state.baits[zone]+=n;return 'Compraste '+n+' cebos de '+zones[zone].name+'.';}));}else if(tab==='inventory'){panel.innerHTML='<h2>Tu colección</h2>'+species.map((f,i)=>{const n=state.fish.filter(j=>j===i).length;return `<div class="row"><span>${f.name} ×${n}<small>${f.rarity} · ${f.rate} CASH por pez/día</small></span><strong>${n*f.rate} / día</strong></div>`}).join('');}else if(tab==='tasks'){panel.innerHTML='<h2>Tarea diaria</h2><p>Vuelve cada día para recibir 1,300 FIN de prueba. El día se renueva a las 00:00 UTC.</p><button id="daily">Recoger recompensa</button>';$('daily').disabled=state.daily===new Date().toISOString().slice(0,10);$('daily').onclick=()=>action(()=>{state=claimDaily(state);return 'Recibiste 1,300 FIN.';});}else{panel.innerHTML='<h2>Billetera de prueba</h2><p>Saldo: <strong>'+fmt(state.cash)+' CASH</strong></p><p class="notice">Esta demo no acepta depósitos ni procesa retiros. Los saldos se guardan en este dispositivo y no tienen valor monetario.</p><button id="demo-topup">Añadir 10,000 FIN de prueba</button>';$('demo-topup').onclick=()=>action(()=>{state.fin+=10000;return 'Añadidos 10,000 FIN de prueba. Puedes volver a comprar cebos.';});}}
 function action(fn){try{const message=fn();save();render();$('status').textContent=message;}catch(e){$('status').textContent=e.message;}}
 $('collection').onclick=()=>action(()=>{state=collect(state);return 'CASH acumulado recogido.';});document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render();});render();setInterval(()=>{update();save();},1000);
-const canvas=$('water'),ctx=canvas.getContext('2d');canvas.width=240;canvas.height=220;const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const canvas=$('water'),ctx=canvas.getContext('2d');canvas.width=480;canvas.height=440;ctx.scale(2,2);const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function draw(time){const t=reduced?0:time/1000;const g=ctx.createLinearGradient(0,0,0,220);g.addColorStop(0,'#43c4cf');g.addColorStop(.35,'#118cb5');g.addColorStop(1,'#073f6d');ctx.fillStyle=g;ctx.fillRect(0,0,240,220);
 // Shifting surface ripples and sunlight shafts.
 for(let i=0;i<8;i++){ctx.fillStyle='rgba(163,247,232,.055)';ctx.beginPath();ctx.moveTo(i*38+Math.sin(t*.3)*7,0);ctx.lineTo(i*38+15,0);ctx.lineTo(i*38-22,220);ctx.lineTo(i*38-48,220);ctx.fill();}
@@ -18,35 +18,21 @@ for(let side=0;side<2;side++)for(let i=0;i<5;i++){const x=side?218-i*5:-9+i*3,y=
 for(let i=0;i<17;i++){const x=(i*29)%240,y=191+(i%3)*7;ctx.fillStyle=i%3?'#279b8e':'#60ba8c';ctx.fillRect(x,y-18-i%19,3,39);ctx.fillRect(x-4,y-12,5,3);ctx.fillRect(x+2,y-23,5,3);}
 for(let i=0;i<6;i++){const x=8+i*45,y=204-i%3*6;ctx.fillStyle=i%2?'#d38496':'#d8aa68';ctx.fillRect(x,y-12,3,21);ctx.fillRect(x-5,y-6,12,3);ctx.fillRect(x-5,y-12,3,7);ctx.fillRect(x+5,y-17,3,12);}
 state.fish.slice(0,40).forEach((id,i)=>{const phase=(i*47+t*(7+i%4))%370;const right=phase<185;const x=26+(right?phase:370-phase),y=58+(i*29)%104+Math.sin(t*.7+i)*3;ctx.save();ctx.translate(Math.round(x),Math.round(y));if(!right)ctx.scale(-1,1);
-// Layered pixel silhouettes, species-specific colors and articulated fins.
-const palettes=[
- ['#526d55','#9caf78','#dce2ba','#597e6c'],
- ['#245e7b','#69bfd0','#d6efe3','#35859e'],
- ['#493d78','#aa86c2','#e9d3d7','#8061a5'],
- ['#356d51','#79b784','#d5e7ac','#419174'],
- ['#8b6335','#e5bd63','#fff0bc','#c18b3d']
-];const pal=palettes[id]||palettes[0];const tail=Math.round(Math.sin(t*5+i)*2);
-ctx.fillStyle='#033f6555';ctx.fillRect(-11,13,31,3);
-ctx.fillStyle=pal[0];
-ctx.fillRect(-10,-4,20,11);ctx.fillRect(-6,-6,14,15);
-ctx.fillRect(9,-3,9,9);ctx.fillRect(17,-1,3,4);
-ctx.fillRect(-17,-5+tail,3,13);ctx.fillRect(-14,-3+tail,4,9);
-ctx.fillStyle=pal[3];ctx.fillRect(-16,-3+tail,2,9);
-ctx.fillRect(-4,-10,3,5);ctx.fillRect(-1,-8,8,3);
-ctx.fillRect(1,7,7,4);ctx.fillRect(4,9,3,3);
-ctx.fillStyle=pal[1];ctx.fillRect(-9,-2,21,7);ctx.fillRect(-5,-4,14,11);
-ctx.fillRect(10,-1,7,5);
-ctx.fillStyle=pal[2];ctx.fillRect(-4,4,15,3);ctx.fillRect(0,7,6,1);
-ctx.fillStyle=pal[0];ctx.fillRect(8,-2,1,7);ctx.fillRect(10,1,1,4);
-for(let row=0;row<3;row++)for(let col=0;col<5;col++){
- ctx.fillStyle=(row+col)%2?pal[0]:pal[2];
- ctx.globalAlpha=.45;ctx.fillRect(-7+col*3+(row%2),-2+row*2,1,1);
-}ctx.globalAlpha=1;
-ctx.fillStyle=pal[3];ctx.fillRect(-1,2,4,2);ctx.fillRect(-3,3,3,3+Math.round(Math.sin(t*4+i)));
-ctx.fillStyle='#f6efd4';ctx.fillRect(13,-2,4,4);
-ctx.fillStyle='#142c34';ctx.fillRect(15,-1,2,2);
-ctx.fillStyle='#ffffff';ctx.fillRect(15,-1,1,1);
-ctx.fillStyle=pal[0];ctx.fillRect(18,3,2,1);
+
+const palettes=[['#354f43','#879d6e','#e4e9cf'],['#153d62','#55afc1','#d2eef0'],['#423353','#a080ac','#eeddd7'],['#25503e','#76a877','#deebbc'],['#735020','#d7ad52','#fff2ce']];
+const pal=palettes[id]||palettes[0],sway=Math.sin(t*4+i)*2;
+ctx.fillStyle='#04374733';ctx.beginPath();ctx.ellipse(0,13,19,2,0,0,Math.PI*2);ctx.fill();
+function fin(points){ctx.fillStyle=pal[1];ctx.beginPath();points.forEach(([x,y],j)=>j?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fill();}
+ctx.globalAlpha=.75;fin([[-12,0],[-23,-9+sway],[-20,sway],[-23,9+sway]]);fin([[-7,-3],[-4,-11],[2,-9],[8,-4]]);fin([[-1,5],[3,11],[10,8],[9,4]]);ctx.globalAlpha=1;
+const body=ctx.createLinearGradient(0,-7,0,8);body.addColorStop(0,pal[0]);body.addColorStop(.35,pal[1]);body.addColorStop(.7,pal[1]);body.addColorStop(1,pal[2]);
+ctx.fillStyle=body;ctx.beginPath();ctx.moveTo(-14,0);ctx.bezierCurveTo(-7,-9,10,-10,18,-3);ctx.quadraticCurveTo(22,-1,21,1);ctx.quadraticCurveTo(18,9,3,8);ctx.bezierCurveTo(-7,8,-10,4,-14,0);ctx.fill();ctx.strokeStyle=pal[0];ctx.lineWidth=.6;ctx.stroke();
+ctx.save();ctx.beginPath();ctx.ellipse(0,0,13,6,0,0,Math.PI*2);ctx.clip();
+for(let row=0;row<5;row++)for(let col=0;col<9;col++){const x=-11+col*2.8+(row%2)*1.4,y=-5+row*2.2;ctx.strokeStyle=row<2?'#173e424d':'#eff7ce55';ctx.lineWidth=.45;ctx.beginPath();ctx.arc(x,y,1.5,-.7,.7);ctx.stroke();}
+if(id===0){ctx.fillStyle='#293f46aa';for(let j=0;j<12;j++){ctx.beginPath();ctx.arc(-9+(j*7)%20,-3+(j*3)%6,.6,0,Math.PI*2);ctx.fill();}}
+ctx.restore();ctx.strokeStyle=pal[0];ctx.lineWidth=.75;ctx.beginPath();ctx.moveTo(12,-4);ctx.quadraticCurveTo(8,1,12,6);ctx.stroke();
+ctx.globalAlpha=.7;fin([[3,1],[6,3],[2,8+sway*.5],[-1,6]]);ctx.globalAlpha=1;
+ctx.strokeStyle='#eaf1cb77';ctx.lineWidth=.45;for(let j=0;j<3;j++){ctx.beginPath();ctx.moveTo(-13,0);ctx.lineTo(-21,(-6+j*6)+sway);ctx.stroke();}
+ctx.fillStyle='#dece99';ctx.beginPath();ctx.arc(16,-2,2.2,0,Math.PI*2);ctx.fill();ctx.fillStyle='#122731';ctx.beginPath();ctx.arc(16.5,-2,1.2,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(17,-2.6,.5,0,Math.PI*2);ctx.fill();ctx.strokeStyle=pal[0];ctx.beginPath();ctx.moveTo(18,3);ctx.lineTo(21,2);ctx.stroke();
 ctx.restore();});
 ctx.fillStyle='#9ee4de88';for(let i=0;i<12;i++){const x=i*21+Math.sin(t+i)*2,y=210-((t*7+i*19)%175);ctx.strokeStyle='#a6e7e466';ctx.strokeRect(Math.round(x),Math.round(y),3,3);}if(!reduced)requestAnimationFrame(draw);}draw(0);
 
