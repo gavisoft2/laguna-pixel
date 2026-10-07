@@ -43,3 +43,5 @@ nav{position:sticky;bottom:max(8px,env(safe-area-inset-bottom));z-index:5;margin
 .is-fighting #tap{background:linear-gradient(#37c696,#169b76);border:3px solid #a58245;box-shadow:0 4px 0 #66532d;font-family:monospace;font-size:20px;min-height:68px;text-transform:uppercase;touch-action:none}
 .river-screen{max-width:560px}
 @media(max-width:1100px){.river-screen{max-width:none}}
+
+#tap{-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}#tap.pressed{filter:brightness(1.18);transform:translateY(2px);box-shadow:0 1px 0 #66532d}
