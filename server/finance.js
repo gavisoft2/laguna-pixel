@@ -80,7 +80,7 @@ export class Finance {
   return this.transaction(async c=>{
    const account=await this.account(c,id),old=await c.query('SELECT * FROM finance_withdrawals WHERE id=$1',[requestId]);
    if(old.rows[0]){const w=old.rows[0];if(String(w.player_id)!==id||w.network!==network||String(w.requested_units)!==quote.requestedUnits||w.destination!==destination)throw Error('La solicitud ya existe con otros datos.');return w;}
-   if(BigInt(account.cash_micros)<BigInt(quote.cashMicros))throw Error('CASH real insuficiente. Los saldos de prueba no son retirables.');
+   if(BigInt(account.cash_micros)<BigInt(quote.cashMicros))throw Error('CASH real insuficiente.');
    await c.query('UPDATE finance_accounts SET cash_micros=cash_micros-$2, held_cash_micros=held_cash_micros+$2 WHERE player_id=$1',[id,quote.cashMicros]);
    const r=await c.query('INSERT INTO finance_withdrawals(id,player_id,network,requested_units,fee_units,net_units,cash_micros,destination,status,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *',[requestId,id,network,quote.requestedUnits,quote.feeUnits,quote.netUnits,quote.cashMicros,destination,'pending',now]);
    await this.event(c,id,'withdrawal:'+requestId,'withdrawal_requested',0,-BigInt(quote.cashMicros),quote.cashMicros,now);return r.rows[0];
@@ -89,7 +89,7 @@ export class Finance {
  // Internal operation only; a future authenticated operator endpoint must call it.
  async rejectWithdrawal(id,requestId,now=Date.now()){
   playerId(id);operationId(requestId);return this.transaction(async c=>{
-   await this.account(c,id);const r=await c.query('SELECT * FROM finance_withdrawals WHERE id=$1 AND player_id=$2 FOR UPDATE',[requestId,id]),w=r.rows[0];if(!w)throw Error('Solicitud no disponible.');if(w.status==='rejected')return {released:false};
+   await this.account(c,id);const r=await c.query('SELECT * FROM finance_withdrawals WHERE id=$1 AND player_id=$2 FOR UPDATE',[requestId,id]),w=r.rows[0];if(!w)throw Error('Solicitud no disponible.');if(w.status==='rejected')return {released:false};if(w.status!=='pending')throw Error('Este retiro ya fue pagado.');
    await c.query('UPDATE finance_accounts SET cash_micros=cash_micros+$2,held_cash_micros=held_cash_micros-$2 WHERE player_id=$1',[id,String(w.cash_micros)]);
    await c.query('UPDATE finance_withdrawals SET status=$2 WHERE id=$1',[requestId,'rejected']);await this.event(c,id,'rejection:'+requestId,'withdrawal_rejected',0,w.cash_micros,-BigInt(w.cash_micros),now);return {released:true};
   });

@@ -1,4 +1,6 @@
 let token=null;let queue=Promise.resolve();
+export let serverConfig={official:false,paymentsEnabled:false};
+export function financeOnline(route,body){return enqueue(async()=>{try{return await request('/api/finance/'+route,body);}catch(e){if(body&&e.message.startsWith('No hay conexión'))return request('/api/finance/'+route,body);throw e;}});}
 async function request(path,body){
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
  try{const response=await fetch(path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},...(body?{body:JSON.stringify(body)}:{}),signal:controller.signal,cache:'no-store'});const data=await response.json();if(!response.ok)throw Error(data.error||'Error del servidor.');return data;}
@@ -7,7 +9,7 @@ async function request(path,body){
 export async function detectOnline(){
  // GitHub Pages keeps the independent local demo. All other hosts require the API.
  if(location.hostname.endsWith('.github.io')||location.protocol==='file:'||(location.hostname==='localhost'&&new URLSearchParams(location.search).get('demo')==='1'))return false;
- const result=await request('/api/config');if(result.online!==true)throw Error('Configuración online no disponible.');return true;
+ const result=await request('/api/config');if(result.online!==true)throw Error('Configuración online no disponible.');serverConfig=result;return true;
 }
 export async function loginOnline(initData){const data=await request('/api/login',{initData});token=data.token;return data;}
 export function readOnline(){return enqueue(()=>request('/api/state'));}

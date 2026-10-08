@@ -1,39 +1,25 @@
 # Aqua View
 
-Juego de pesca para Telegram: cuatro áreas, captura manteniendo el dedo, estanque con producción diaria y peces que viven seis meses. Monedas y recompensas de **prueba, sin valor monetario**. Depósitos y retiros siguen deshabilitados.
+Juego móvil de pesca para Telegram: río, lago, costa y océano, combate manteniendo el dedo, estanque con producción diaria y peces que viven seis meses. La cuenta oficial comienza con cero VIEW, cero CASH y sin peces. La recompensa diaria es 300 VIEW, una vez por día UTC.
 
-## Desplegar en Render
+## Servidor
 
-[Crear servidor y base de datos](https://render.com/deploy?repo=https://github.com/gavisoft2/laguna-pixel)
+Node.js 24 y PostgreSQL. Configurar `BOT_TOKEN`, `DATABASE_URL` y opcionalmente `APP_URL`. Ejecutar `npm ci` y `npm start`. Nunca colocar el token del bot ni claves privadas en archivos públicos.
 
-1. Inicia sesión en Render y conecta GitHub si se solicita. El Blueprint `render.yaml` crea `aqua-view` y `aqua-view-db`.
-2. En `BOT_TOKEN`, pega el token de **@AquaViewGameBot** obtenido en BotFather. Introdúcelo únicamente en Render; nunca en el código, GitHub, capturas ni mensajes. `DATABASE_URL` se conecta automáticamente a la base de datos.
-3. Confirma el despliegue. Espera a que el servicio muestre **Live**. Copia su URL HTTPS real; Render puede añadir un sufijo al nombre.
-4. Comprueba `<URL>/healthz`: debe devolver `{"ok":true}`. `<URL>/api/config` debe indicar `online: true` y `paymentsEnabled: false`.
-5. En BotFather → Aqua View → Mini Apps, cambia **Main App** y **Menu Button** a esa misma URL. Conserva la restricción de mismo origen. Ambas configuraciones deben apuntar al servidor, no a GitHub Pages.
-6. Cierra y abre de nuevo el juego desde Telegram. Verás **PRUEBA ONLINE · SIN PAGOS REALES** después de entrar.
-7. Compra un cebo, reclama la recompensa diaria y pesca. Cierra y vuelve a abrir; comprueba los mismos saldos y peces. Con otra cuenta de Telegram debes ver un estanque independiente.
+Render usa `render.yaml`. En un servicio existente, desplegar manualmente el último commit y configurar las variables desde Environment. `/healthz` comprueba la base; `/api/config` informa si la cuenta oficial y los pagos están habilitados. Configurar la Main App y Menu Button de @AquaViewGameBot con la URL HTTPS del servidor.
 
-El Blueprint usa planes gratuitos para estas pruebas. La base gratuita de Render **caduca a los 30 días**; hay que cambiarla a un plan persistente de pago antes de esa fecha para conservar el progreso. El servicio web gratuito también puede dormir tras periodos de inactividad. No usar esta configuración como lanzamiento definitivo con dinero real. Referencia: https://render.com/docs/free
+## Depósitos y retiros
 
-El servidor no responde a mensajes `/start`: el juego se abre mediante la Main App o el botón del menú. Este despliegue no configura un webhook de mensajes.
+TON (Gram) y USDT exclusivamente en TON. Verificación blockchain, recibos únicos, cuenta contable independiente y retiros manuales con reserva de CASH y comisión 5%. La administración solo acepta la cuenta indicada en `ADMIN_TELEGRAM_ID`. `PAYMENTS_ENABLED=true` habilita las operaciones después de configurar ese ID. Sin él, la interfaz oficial está disponible pero los pagos permanecen deshabilitados.
 
-## Cuentas y progreso
+Consultar [PAYMENTS-SETUP.md](PAYMENTS-SETUP.md) para instrucciones, tasas, comentario obligatorio de cada pedido y procedimiento de envío manual. El código no firma ni envía criptomonedas automáticamente. Comprobar una recarga y un retiro reales tras desplegar antes de anunciar la apertura.
 
-La versión online valida la firma de `Telegram.WebApp.initData` y su antigüedad antes de identificar al jugador. Guarda sesiones con tokens aleatorios, almacenados como hashes, y progreso en PostgreSQL. La cuenta nueva empieza con cinco truchas y 6.500 VIEW de prueba. La recompensa diaria es 300 VIEW, una vez por día UTC.
+Los saldos y peces de prueba permanecen archivados y no se convierten en dinero real. El juego oficial usa `official_state` y la cuenta contable PostgreSQL. GitHub Pages conserva una demo local independiente; usar la URL de Render en Telegram.
 
-El progreso anterior de la demo de GitHub Pages permanece local y no se importa: el navegador no puede acreditar saldos en el servidor. La recarga ilimitada de 10.000 VIEW solo existe en la demo local.
+## Operación y validación
 
-Las compras, la recogida de CASH y el combate se resuelven en el servidor. Cada operación tiene una clave para evitar duplicados al reintentar; se bloquea la fila del jugador durante la transacción. El cliente comunica el botón mantenido y las solicitudes de lanzar/capturar, pero no puede indicar un pez ganado, un saldo ni una hora de captura. Una desconexión deja de mantener el botón después de dos segundos.
+La API valida la firma y antigüedad de `Telegram.WebApp.initData`, almacena sesiones como hashes y decide la pesca y la economía en el servidor. El cliente solo envía acciones e interacción del dedo; no puede declarar capturas ni saldos. Los registros contables, reservas y recibos se actualizan mediante transacciones.
 
-## Desarrollo
+`npm test` comprueba economía, seis meses de vida, autenticación, cuentas independientes, persistencia, contabilidad y verificación blockchain con casos de rechazo y duplicados. No utiliza pagos reales para los tests.
 
-Requiere Node.js 24 y PostgreSQL. Instala con `npm ci`, configura las variables del ejemplo y ejecuta `npm start`. El servidor sirve también la interfaz desde su propio origen.
-
-`npm test` prueba la economía, la vida de los peces, las firmas de Telegram, las operaciones HTTP, los reintentos, cuentas separadas y la persistencia tras reiniciar PostgreSQL embebido (PGlite). No requiere credenciales reales.
-
-Para la demo local: `npm run demo` y abre `http://localhost:8080/?demo=1`. GitHub Pages mantiene la demo local independiente.
-
-## Antes de habilitar pagos
-
-Este despliegue es la fase de pruebas online. Faltan la verificación de depósitos en blockchain, el sistema de retiros y reservas, la gestión administrativa y las pruebas completas en Telegram móvil. La dirección de depósito mostrada no permite acreditar un pago por sí sola. No enviar dinero durante esta fase.
+La base gratuita de Render vence a los 30 días; migrar o mejorar su plan antes de la caducidad sin perder los datos. El servicio web gratuito puede dormir por inactividad. Documentación: https://render.com/docs/free
