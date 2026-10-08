@@ -82,3 +82,24 @@ nav{position:sticky;bottom:max(8px,env(safe-area-inset-bottom));z-index:5;margin
 #wallet-panel .payment-summary{padding:10px;font-size:14px;margin:8px 0}
 #wallet-panel button{font-size:12px}
 #wallet-panel input[type=number],#wallet-panel input[type=text],#wallet-panel select{min-height:40px;padding:8px;margin:6px 0}
+
+/* Collection totals and compact species rows. */
+.inventory-summary{display:grid;gap:10px;padding:14px;background:linear-gradient(135deg,#145568,#227d77);border:1px solid #86b5a3;border-radius:12px;color:#fff1d1}
+.inventory-summary>div{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.inventory-summary>div+div{border-top:1px solid #ffffff30;padding-top:10px}
+.inventory-summary small{font-size:9px;letter-spacing:.5px;max-width:140px;line-height:1.5;color:#c8e5d9}
+.inventory-summary strong{font-size:24px;text-align:right;line-height:1.15}
+.inventory-summary strong span{font-size:11px;display:block;color:#b9e3b6;margin-top:4px}
+.inventory-subheading{font-size:13px;margin:16px 0 10px}
+.inventory-list{display:grid;gap:8px}
+.inventory-row{display:flex;gap:10px;align-items:center;background:#fff4db;border:1px solid #ccb584;border-radius:10px;padding:10px}
+.inventory-row .fish-portrait{width:72px;height:54px;flex:none}
+.inventory-details{flex:1;min-width:0}
+.inventory-details h3{font-size:13px;margin:0 0 3px}
+.inventory-details>small{font-size:9px;color:#7b6c53}
+.inventory-row-values{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:8px}
+.inventory-row-values span{font-size:16px;font-weight:800;color:#4e5f4d}
+.inventory-row-values strong{font-size:15px;color:#347454;text-align:right}
+.inventory-row-values small{font-size:9px;font-weight:400;display:block}
+.inventory-empty{padding:12px;background:#fff4db;border-radius:10px}
+@media(max-width:340px){.inventory-row .fish-portrait{width:55px;height:45px}.inventory-summary strong{font-size:20px}}
