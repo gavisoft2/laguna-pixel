@@ -1,5 +1,5 @@
 import {depositQuote,withdrawQuote} from './payments.js';
-import {initial,accrue,cast,collect,claimDaily,species,zones,baitPrice,rollFish} from './engine.js?v=ocean-fish-18';
+import {initial,accrue,cast,collect,claimDaily,species,zones,baitPrice,rollFish} from './engine.js?v=fish-names-19';
 const telegram=window.Telegram?.WebApp;if(telegram?.initData){telegram.ready();telegram.expand();}
 let audioContext;const preferences={sound:false,vibration:false};try{Object.assign(preferences,JSON.parse(localStorage.getItem('laguna-preferences')||'{}'));}catch{}
 function feedback(kind){if(preferences.vibration){try{if(telegram?.initData)telegram.HapticFeedback?.impactOccurred(kind==='success'?'medium':'light');else navigator.vibrate?.(kind==='success'?[35,30,35]:25);}catch{}}if(!preferences.sound)return;try{audioContext??=new (window.AudioContext||window.webkitAudioContext)();audioContext.resume();const frequencies=kind==='success'?[440,660,880]:kind==='bite'?[740,980]:[240,160];frequencies.forEach((f,i)=>{const o=audioContext.createOscillator(),g=audioContext.createGain(),at=audioContext.currentTime+i*.12;o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(.12,at+.02);g.gain.exponentialRampToValueAtTime(.0001,at+.2);o.connect(g);g.connect(audioContext.destination);o.start(at);o.stop(at+.22);});}catch{}}
