@@ -1,5 +1,6 @@
 import {createHash,randomBytes} from 'node:crypto';
 import {newPlayer,advance,applyAction,publicState} from './game.js';
+const testPlayer=now=>({...newPlayer(now),fin:208000,cash:0,pending:0,fish:[],fishCaughtAt:[],testSetup:2});
 const digest=token=>createHash('sha256').update(token).digest('hex');
 export class Store {
  constructor(pool,{finance=null,official=false}={}){this.pool=pool;this.finance=finance;this.official=official;}
@@ -28,7 +29,8 @@ export class Store {
    await client.query('BEGIN');const account=this.official&&!testMode?await this.finance.account(client,id):null;
    const row=await client.query('SELECT state,official_state,admin_test_state FROM players WHERE id=$1 FOR UPDATE',[id]);if(!row.rows[0])throw Error('Cuenta no disponible.');
    let input=testMode?row.rows[0].admin_test_state:this.official?row.rows[0].official_state:row.rows[0].state;
-   if(!input){input=newPlayer(now);if(testMode)input.fin=1000000;else{input.fin=0;input.cash=0;input.pending=0;input.fish=[];input.fishCaughtAt=[];}}
+   if(testMode&&input?.testSetup!==2)input=testPlayer(now);
+   if(!input){input=newPlayer(now);input.fin=0;input.cash=0;input.pending=0;input.fish=[];input.fishCaughtAt=[];}
    if(account){input.fin=Number(account.view_balance);input.cash=Number(account.cash_micros)/1e6;}
    const previousFin=input.fin,previousCash=input.cash;
    let state=advance(input,now),message='';
@@ -41,7 +43,7 @@ export class Store {
       const canonical=x=>JSON.stringify(Object.entries(x).sort(([a],[b])=>a.localeCompare(b)));
       if(canonical(old.rows[0].payload)!==canonical(body))throw Error('La operación ya existe con otros datos.');
     }message='Operación ya procesada.';}
-    else {if(testMode&&body.type==='topup'){state.fin=Math.min(state.fin+1000000,1000000000);message='Añadidos 1,000,000 VIEW de prueba. No son retirables.';}else ({state,message}=applyAction(state,body,now));await client.query('INSERT INTO actions(player_id,request_id,payload,created_at) VALUES($1,$2,$3,$4)',[id,requestKey,JSON.stringify(body),now]);}
+    else {if(testMode&&body.type==='resetTest'){state=testPlayer(now);message='Pruebas reiniciadas: 208,000 VIEW, sin peces, cebos ni CASH.';}else ({state,message}=applyAction(state,body,now));await client.query('INSERT INTO actions(player_id,request_id,payload,created_at) VALUES($1,$2,$3,$4)',[id,requestKey,JSON.stringify(body),now]);}
    }
    if(account){const viewDelta=state.fin-previousFin,cashDelta=Math.round((state.cash-previousCash)*1e6);if(viewDelta||cashDelta){await client.query('UPDATE finance_accounts SET view_balance=view_balance+$2,cash_micros=cash_micros+$3 WHERE player_id=$1',[id,String(viewDelta),String(cashDelta)]);await this.finance.event(client,id,'game:'+body.requestId,'game_'+body.type,viewDelta,cashDelta,0,now);}state.cash=(Number(account.cash_micros)+cashDelta)/1e6;}
    await client.query('UPDATE players SET '+(testMode?'admin_test_state':this.official?'official_state':'state')+'=$2 WHERE id=$1',[id,JSON.stringify(state)]);await client.query('COMMIT');return {state:publicState(state),message,testMode};

@@ -37,15 +37,18 @@ test('official economy starts at zero, preserves trial, credits once, ledger tra
   assert.equal((await api('finance/admin',null,bob.token)).status,404);assert.equal((await api('finance/admin',null,alice.token)).status,200);
   // Test mode is checked on the server, not just hidden in the UI.
   assert.equal((await api('admin/test/state',null,bob.token)).status,403);
-  const topup={type:'topup',requestId:randomUUID()};
+  const topup={type:'resetTest',requestId:randomUUID()};
   assert.equal((await api('admin/test/action',topup,bob.token)).status,403);
   assert.equal((await api('action',{...topup,testMode:true},alice.token)).status,400);
-  const sandbox=(await api('admin/test/state',null,alice.token));assert.equal(sandbox.status,200);assert.equal(sandbox.data.state.fin,1000000);
+  await db.query('UPDATE players SET admin_test_state=$1 WHERE id=123',[JSON.stringify({fin:1000000,cash:999,fish:[0],baits:[1,1,1,1]})]);
+  const sandbox=(await api('admin/test/state',null,alice.token));assert.equal(sandbox.status,200);assert.equal(sandbox.data.state.fin,208000);assert.deepEqual(sandbox.data.state.fish,[]);assert.deepEqual(sandbox.data.state.baits,[0,0,0,0]);assert.equal(sandbox.data.state.cash,0);
   await api('admin/test/action',topup,alice.token);await api('admin/test/action',topup,alice.token);
-  assert.equal((await api('admin/test/state',null,alice.token)).data.state.fin,2000000);
-  const testBuy={type:'buy',zone:3,count:11,requestId:randomUUID()};await api('admin/test/action',testBuy,alice.token);
-  assert.equal((await api('admin/test/state',null,alice.token)).data.state.baits[3],11);
+  assert.equal((await api('admin/test/state',null,alice.token)).data.state.fin,208000);
+  const testBuy={type:'buy',zone:3,count:5,requestId:randomUUID()};await api('admin/test/action',testBuy,alice.token);
+  assert.equal((await api('admin/test/state',null,alice.token)).data.state.baits[3],5);
   assert.equal((await api('state',null,alice.token)).data.state.baits[3],0);
+  await api('admin/test/action',{type:'resetTest',requestId:randomUUID()},alice.token);assert.equal((await api('admin/test/state',null,alice.token)).data.state.fin,208000);assert.deepEqual((await api('admin/test/state',null,alice.token)).data.state.baits,[0,0,0,0]);
+  assert.equal((await api('admin/test/action',{type:'topup',requestId:randomUUID()},alice.token)).status,400);
   const sandboxState=(await db.query('SELECT admin_test_state FROM players WHERE id=123')).rows[0].admin_test_state;sandboxState.cash=99999999;sandboxState.pending=100000;await db.query('UPDATE players SET admin_test_state=$1 WHERE id=123',[JSON.stringify(sandboxState)]);
   await api('admin/test/action',{type:'collect',requestId:randomUUID()},alice.token);
   assert.equal(String((await finance.balances('123')).cash_micros),'0');assert.equal(String((await finance.balances('123')).view_balance),'0');
