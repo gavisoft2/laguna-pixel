@@ -112,3 +112,5 @@ nav{position:sticky;bottom:max(8px,env(safe-area-inset-bottom));z-index:5;margin
 .catalog-zone>h3{font-size:14px;margin:0 0 8px;padding:7px 10px;border-radius:7px;background:#1b6572;color:#fff0cb}
 .catalog-rate{margin-top:6px;font-size:10px;color:#397753}
 .catalog-rate strong{font-size:18px}
+
+#marker .fish-portrait{width:100%;height:100%;object-fit:contain;background:transparent;border-radius:0}img.fish-portrait{object-fit:contain}
