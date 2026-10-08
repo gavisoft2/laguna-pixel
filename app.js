@@ -1,3 +1,4 @@
+import {drawPond} from './pond-art.js?v=living-pond-28';
 import {drawFish,fishPortrait} from './fish-art.js?v=species-art-27';
 import {depositQuote,withdrawQuote} from './payments.js';
 import {initial,accrue,cast,collect,claimDaily,species,zones,baitPrice,rollFish} from './engine.js?v=inventory-summary-20';
@@ -16,23 +17,8 @@ function render(){update();document.querySelectorAll('[data-tab]').forEach(b=>b.
 function action(fn){try{const message=fn();save();render();$('status').textContent=message;}catch(e){$('status').textContent=e.message;}}
 $('collection').onclick=()=>action(()=>{state=collect(state);return 'CASH acumulado recogido.';});$('fish-catalog').onclick=()=>openWallet('catalog');document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>openWallet(b.dataset.tab));render();setInterval(()=>{update();save();},1000);
 const canvas=$('water'),ctx=canvas.getContext('2d');canvas.width=960;canvas.height=880;ctx.scale(4,4);const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-function draw(time){const t=reduced?0:time/1000;const g=ctx.createLinearGradient(0,0,0,220);g.addColorStop(0,'#43c4cf');g.addColorStop(.35,'#118cb5');g.addColorStop(1,'#073f6d');ctx.fillStyle=g;ctx.fillRect(0,0,240,220);
-// Shifting surface ripples and sunlight shafts.
-for(let i=0;i<8;i++){ctx.fillStyle='rgba(163,247,232,.055)';ctx.beginPath();ctx.moveTo(i*38+Math.sin(t*.3)*7,0);ctx.lineTo(i*38+15,0);ctx.lineTo(i*38-22,220);ctx.lineTo(i*38-48,220);ctx.fill();}
-for(let i=0;i<32;i++){ctx.fillStyle=i%2?'#89e0de55':'#c6f4e044';ctx.strokeStyle=ctx.fillStyle;ctx.lineWidth=.65;ctx.beginPath();ctx.ellipse((i*37+Math.sin(t+i)*3)%240,8+(i%5)*5,9+i%9,1.5,0,0,Math.PI);ctx.stroke();}
-// Organic sand, stones and swaying aquatic vegetation.
-const sand=ctx.createLinearGradient(0,173,0,220);sand.addColorStop(0,'#277389');sand.addColorStop(1,'#b9aa81');ctx.fillStyle=sand;ctx.beginPath();ctx.moveTo(0,194);ctx.bezierCurveTo(55,177,99,207,154,189);ctx.quadraticCurveTo(204,178,240,192);ctx.lineTo(240,220);ctx.lineTo(0,220);ctx.fill();
-for(let i=0;i<35;i++){ctx.fillStyle=i%2?'#e3d7ad44':'#365d6b44';ctx.beginPath();ctx.ellipse(i*37%240,199+i%17,.8,.4,0,0,Math.PI*2);ctx.fill();}
-for(let i=0;i<9;i++){const x=i<5?i*7:221+(i-5)*6,y=173+(i%3)*12;const rock=ctx.createLinearGradient(x,y-8,x,y+8);rock.addColorStop(0,'#88a699');rock.addColorStop(1,'#335563');ctx.fillStyle=rock;ctx.beginPath();ctx.ellipse(x,y,14,8,-.25,0,Math.PI*2);ctx.fill();}
-for(let i=0;i<24;i++){const x=i*31%240,y=213-i%7,height=15+i%5*6,wave=Math.sin(t*.7+i)*4;ctx.strokeStyle=['#3c9e87','#63bba0','#287f74'][i%3];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,y);ctx.bezierCurveTo(x-4,y-height*.4,x+wave,y-height*.7,x+wave,y-height);ctx.stroke();ctx.fillStyle=ctx.strokeStyle;ctx.beginPath();ctx.ellipse(x+wave*.7,y-height*.65,3,1.2,-.7,0,Math.PI*2);ctx.fill();}
-for(let i=0;i<7;i++){ctx.fillStyle=i%2?'#cf9a9466':'#e1c58d77';ctx.beginPath();ctx.ellipse(i*41,212-i%4,5,2,0,0,Math.PI*2);ctx.fill();}
-state.fish.slice(0,40).forEach((id,i)=>{const phase=(i*47+t*(7+i%4))%370;const right=phase<185;const x=26+(right?phase:370-phase),y=58+(i*29)%104+Math.sin(t*.7+i)*3;ctx.save();ctx.translate(Math.round(x),Math.round(y));if(!right)ctx.scale(-1,1);
-
-const pondRect=canvas.getBoundingClientRect();const shapeCorrection=pondRect.height?pondRect.width*220/(pondRect.height*240):1;ctx.scale([1.28,1.08,1.25,1.1,1.4][id]||1,shapeCorrection*([.85,1.05,.95,1.04,.92][id]||1));
-drawFish(ctx,id,t+i);
-
-ctx.restore();});
-ctx.fillStyle='#9ee4de88';for(let i=0;i<12;i++){const x=i*21+Math.sin(t+i)*2,y=210-((t*7+i*19)%175);ctx.strokeStyle='#a6e7e466';ctx.strokeRect(Math.round(x),Math.round(y),3,3);}if(!reduced)requestAnimationFrame(draw);}draw(0);
+let lastPondFrame=-Infinity;
+function draw(time){if(time-lastPondFrame>=1000/30){lastPondFrame=time;const box=canvas.getBoundingClientRect(),aspect=box.height?box.width*220/(box.height*240):1;drawPond(ctx,state.fish,reduced?0:time/1000,aspect);}if(!reduced)requestAnimationFrame(draw);}draw(0);
 
 let session=null;
 function drawFishingLandscape(r,area,time){
