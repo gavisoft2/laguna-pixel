@@ -3,6 +3,8 @@ export let testMode=false;
 export function switchTestMode(enabled){return enqueue(async()=>{const data=await request(enabled?'/api/admin/test/state':'/api/state');testMode=enabled;return data;});}
 export let serverConfig={official:false,paymentsEnabled:false};
 export function financeOnline(route,body){return enqueue(async()=>{try{return await request('/api/finance/'+route,body);}catch(e){if(body&&e.message.startsWith('No hay conexión'))return request('/api/finance/'+route,body);throw e;}});}
+export function groupTaskOnline(claim=false){return enqueue(()=>request('/api/tasks/group'+(claim?'/claim':''),claim?{}:undefined));}
+export function discoverGroupOnline(){return enqueue(()=>request('/api/tasks/group/discover'));}
 async function request(path,body){
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
  try{const response=await fetch(path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},...(body?{body:JSON.stringify(body)}:{}),signal:controller.signal,cache:'no-store'});const data=await response.json();if(!response.ok)throw Error(data.error||'Error del servidor.');return data;}

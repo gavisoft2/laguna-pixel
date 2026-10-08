@@ -27,3 +27,9 @@ La base gratuita de Render vence a los 30 días; migrar o mejorar su plan antes 
 ## Pruebas exclusivas del administrador
 
 Solo el ID configurado en `ADMIN_TELEGRAM_ID` recibe el botón **Entrar en pruebas**. La partida separada comienza con exactamente 208,000 VIEW, sin peces, cebos ni CASH. Billetera permite reiniciar las pruebas a ese estado; no suma saldo. La versión anterior de las pruebas se reinicia una sola vez al abrir este modo tras actualizar. Comprar, pescar y recoger CASH en este modo solo modifica `admin_test_state`. No se transfieren VIEW, peces ni CASH a la partida oficial y no hay retiros de prueba. **Volver a cuenta oficial** recupera el estado oficial. El servidor rechaza las rutas de pruebas de cualquier otra cuenta, independientemente de lo que modifique el cliente.
+
+## Tarea del grupo Aqua View
+
+Tareas incluye el enlace https://t.me/+yglx16-VGRhkN2Vh y una recompensa única de 200 VIEW. Añadir @AquaViewGameBot como administrador de ese grupo y configurar `AQUA_GROUP_CHAT_ID` en Render con el ID numérico negativo del grupo (no el enlace de invitación ni el ID personal). El servidor usa getChatMember con la cuenta autenticada; solo acredita a miembros actuales, una vez por jugador. Solicitudes pendientes, miembros que salieron o fueron expulsados y errores de Telegram no reciben saldo. Sin configurar el ID se puede abrir el grupo pero no reclamar la recompensa. El modo de pruebas no muestra reclamación oficial. Documentación: https://core.telegram.org/bots/api#getchatmember
+
+Para obtener el ID sin compartir el token, el administrador puede añadir el bot al grupo, escribir `/grupo@AquaViewGameBot` allí y abrir **Tareas → Explorar → Obtener ID del grupo**. Esta consulta de metadatos del bot es exclusiva del administrador, no envía mensajes ni confirma actualizaciones. Si existe un webhook o no hay actualizaciones recientes, introducir el ID del grupo manualmente.

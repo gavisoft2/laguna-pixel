@@ -1,0 +1,20 @@
+import {groupTaskOnline,discoverGroupOnline} from './online-client.js?v=group-task-38';
+let selected='routine';
+export function renderTasks(panel,{state,online,testMode,admin=false,onDaily,onRefresh}){
+ let group={claimed:false,configured:false},loading=online&&!testMode,notice='';
+ const today=new Date().toISOString().slice(0,10),dailyDone=state.daily===today;
+ function paint(){if(!panel.isConnected)return;panel.innerHTML='<div class="tasks-heading"><small>MISIONES</small><h2>Tareas</h2></div><div class="task-tabs" role="tablist" aria-label="Tipos de tareas">'+[['routine','Rutina'],['explore','Explorar'],['done','Hecho']].map(([id,label])=>'<button role="tab" data-task-tab="'+id+'" aria-selected="'+(selected===id)+'">'+label+'</button>').join('')+'</div><div class="task-list"></div><p class="task-notice" role="status"></p>';
+  const list=panel.querySelector('.task-list');
+  function card({title,description,reward,kind,done}){const el=document.createElement('article');el.className='task-card';el.innerHTML='<div class="task-detail"><div class="task-title"><h3>'+title+'</h3>'+(kind==='group'?'<button class="task-go" aria-label="Abrir grupo Aqua View">IR ↗</button>':'')+'</div><p>'+description+'</p></div><div class="task-reward"><span>◈ VIEW</span><strong>+'+reward+'</strong><button class="task-claim"></button></div>';const claim=el.querySelector('.task-claim');claim.disabled=done;claim.textContent=done?'✓ Hecho':kind==='daily'?'Recibir':'Verificar';
+   if(kind==='daily'){claim.id='daily';claim.onclick=onDaily;}
+   else {el.querySelector('.task-go').onclick=()=>{const url='https://t.me/+yglx16-VGRhkN2Vh',tg=window.Telegram?.WebApp;if(tg?.openTelegramLink)tg.openTelegramLink(url);else window.open(url,'_blank','noopener');};claim.disabled=done||!online||testMode||loading||!group.configured;claim.textContent=done?'✓ Hecho':loading?'Cargando…':'Verificar';claim.onclick=async()=>{claim.disabled=true;try{const result=await groupTaskOnline(true);group.claimed=true;notice=result.message;await onRefresh();paint();}catch(e){notice=e.message;paint();}};}
+   list.append(el);
+  }
+  const daily={title:'Recompensa diaria',description:'Vuelve cada día y recibe tu recompensa. Se renueva a las 00:00 UTC.',reward:300,kind:'daily',done:dailyDone},join={title:'Únete a Aqua View',description:'Únete al grupo oficial de Telegram y verifica tu membresía. Recompensa única.',reward:200,kind:'group',done:group.claimed};
+  if(selected==='routine')card(daily);else if(selected==='explore')card(join);else{if(dailyDone)card(daily);if(group.claimed)card(join);if(!list.children.length)list.innerHTML='<p class="task-empty">Aquí aparecerán tus tareas completadas.</p>';}
+  panel.querySelector('.task-notice').textContent=notice||(selected==='explore'&&!group.claimed?(testMode||!online?'Vuelve a tu cuenta oficial para recibir la recompensa del grupo.':loading?'Consultando tarea…':!group.configured?'Verificación pendiente de configuración del grupo.':'Pulsa IR, únete al grupo y vuelve para verificar.'):'');
+  if(admin&&online&&!testMode&&selected==='explore'&&!group.configured){const help=document.createElement('div'),button=document.createElement('button'),result=document.createElement('p');help.className='group-setup';result.textContent='Añade @AquaViewGameBot como administrador del grupo y escribe allí /grupo@AquaViewGameBot.';button.textContent='Obtener ID del grupo';button.onclick=async()=>{button.disabled=true;try{const data=await discoverGroupOnline();result.textContent=data.groups.length?data.groups.map(g=>g.title+': '+g.id).join(' · ')+' — Copia el ID de Aqua View en AQUA_GROUP_CHAT_ID, dentro de Environment en Render.':'No se encontraron grupos. Escribe /grupo@AquaViewGameBot en tu grupo y vuelve a intentar.';}catch(e){result.textContent=e.message;}finally{button.disabled=false;}};help.append(result,button);panel.append(help);}
+  panel.querySelectorAll('[data-task-tab]').forEach(b=>b.onclick=()=>{selected=b.dataset.taskTab;paint();});
+ }
+ paint();if(online&&!testMode)groupTaskOnline().then(data=>{group=data;loading=false;paint();}).catch(e=>{loading=false;notice=e.message;paint();});
+}
