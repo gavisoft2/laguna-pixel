@@ -1,24 +1,39 @@
-# Laguna Pixel — v0.1
-Juego móvil de pesca original inspirado en mecánicas de colección. Prototipo independiente de Reinos de Etherial y PixelPond.
+# Aqua View
 
-## Jugar
-Sirve esta carpeta como sitio estático HTTPS, o ejecuta `npm start` y abre http://localhost:8080. No requiere instalar dependencias. Ejecuta `npm test` para comprobar la economía.
+Juego de pesca para Telegram: cuatro áreas, captura manteniendo el dedo, estanque con producción diaria y peces que viven seis meses. Monedas y recompensas de **prueba, sin valor monetario**. Depósitos y retiros siguen deshabilitados.
 
-## Implementado
-Estanque pixelado animado, pesca por paquetes, probabilidades 80/15/5, colección, producción sin conexión, recogida, tarea diaria y guardado local. Común 13, raro 30, épico 75 CASH diarios. Inicio: 5 truchas y 6,500 FIN de prueba. Sin pagos reales.
+## Desplegar en Render
 
-## Telegram pendiente
-Después de publicar en HTTPS, configurar el bot y la Mini App. Esta versión funciona como página móvil, pero todavía no autentica usuarios Telegram. Antes de usar saldos compartidos o pagos: backend, validación de initData, base de datos, reloj de servidor, registros de transacciones, verificación de depósitos, retiros y presupuesto de recompensas. Nunca colocar el token del bot ni claves privadas en estos archivos. El guardado local es modificable y no sirve como saldo financiero.
+[Crear servidor y base de datos](https://render.com/deploy?repo=https://github.com/gavisoft2/laguna-pixel)
 
-## Siguientes entregas
-1. Autenticación Telegram y guardado en servidor.
-2. Más especies, zonas, decoración y cría.
-3. Economía validada y sistema de pagos, después de definir moneda y red.
+1. Inicia sesión en Render y conecta GitHub si se solicita. El Blueprint `render.yaml` crea `aqua-view` y `aqua-view-db`.
+2. En `BOT_TOKEN`, pega el token de **@AquaViewGameBot** obtenido en BotFather. Introdúcelo únicamente en Render; nunca en el código, GitHub, capturas ni mensajes. `DATABASE_URL` se conecta automáticamente a la base de datos.
+3. Confirma el despliegue. Espera a que el servicio muestre **Live**. Copia su URL HTTPS real; Render puede añadir un sufijo al nombre.
+4. Comprueba `<URL>/healthz`: debe devolver `{"ok":true}`. `<URL>/api/config` debe indicar `online: true` y `paymentsEnabled: false`.
+5. En BotFather → Aqua View → Mini Apps, cambia **Main App** y **Menu Button** a esa misma URL. Conserva la restricción de mismo origen. Ambas configuraciones deben apuntar al servidor, no a GitHub Pages.
+6. Cierra y abre de nuevo el juego desde Telegram. Verás **PRUEBA ONLINE · SIN PAGOS REALES** después de entrar.
+7. Compra un cebo, reclama la recompensa diaria y pesca. Cierra y vuelve a abrir; comprueba los mismos saldos y peces. Con otra cuenta de Telegram debes ver un estanque independiente.
 
-Los valores de raros y épicos son propuestas propias. La especie legendaria (180/día) no está habilitada todavía. Peces visibles limitados a 40 para rendimiento; la producción incluye toda la colección.
+El Blueprint usa planes gratuitos para estas pruebas. La base gratuita de Render **caduca a los 30 días**; hay que cambiarla a un plan persistente de pago antes de esa fecha para conservar el progreso. El servicio web gratuito también puede dormir tras periodos de inactividad. No usar esta configuración como lanzamiento definitivo con dinero real. Referencia: https://render.com/docs/free
 
-## Actualización visual
-Fondo orgánico con arena, rocas y vegetación; identidad de color y agua por zona; ondas animadas del anzuelo y caña flexible; fichas de colección con rareza y producción; sonido sintetizado y vibración opcionales (apagados por defecto). La vibración depende del dispositivo. Telegram SDK inicializa y expande la Mini App si se abre con initData; esto no autentica saldos ni implementa guardado remoto.
+El servidor no responde a mensajes `/start`: el juego se abre mediante la Main App o el botón del menú. Este despliegue no configura un webhook de mensajes.
 
-## Publicar en Telegram
-Configurar el enlace HTTPS del juego como Mini App del bot desde BotFather. Todavía no hay backend desplegado ni sincronización entre dispositivos. Se requiere un bot y alojamiento de servidor; su token se configura únicamente como secreto del servidor, nunca en el frontend ni en GitHub. Referencia oficial: https://core.telegram.org/bots/webapps
+## Cuentas y progreso
+
+La versión online valida la firma de `Telegram.WebApp.initData` y su antigüedad antes de identificar al jugador. Guarda sesiones con tokens aleatorios, almacenados como hashes, y progreso en PostgreSQL. La cuenta nueva empieza con cinco truchas y 6.500 VIEW de prueba. La recompensa diaria es 300 VIEW, una vez por día UTC.
+
+El progreso anterior de la demo de GitHub Pages permanece local y no se importa: el navegador no puede acreditar saldos en el servidor. La recarga ilimitada de 10.000 VIEW solo existe en la demo local.
+
+Las compras, la recogida de CASH y el combate se resuelven en el servidor. Cada operación tiene una clave para evitar duplicados al reintentar; se bloquea la fila del jugador durante la transacción. El cliente comunica el botón mantenido y las solicitudes de lanzar/capturar, pero no puede indicar un pez ganado, un saldo ni una hora de captura. Una desconexión deja de mantener el botón después de dos segundos.
+
+## Desarrollo
+
+Requiere Node.js 24 y PostgreSQL. Instala con `npm ci`, configura las variables del ejemplo y ejecuta `npm start`. El servidor sirve también la interfaz desde su propio origen.
+
+`npm test` prueba la economía, la vida de los peces, las firmas de Telegram, las operaciones HTTP, los reintentos, cuentas separadas y la persistencia tras reiniciar PostgreSQL embebido (PGlite). No requiere credenciales reales.
+
+Para la demo local: `npm run demo` y abre `http://localhost:8080/?demo=1`. GitHub Pages mantiene la demo local independiente.
+
+## Antes de habilitar pagos
+
+Este despliegue es la fase de pruebas online. Faltan la verificación de depósitos en blockchain, el sistema de retiros y reservas, la gestión administrativa y las pruebas completas en Telegram móvil. La dirección de depósito mostrada no permite acreditar un pago por sí sola. No enviar dinero durante esta fase.

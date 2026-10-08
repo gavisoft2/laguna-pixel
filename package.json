@@ -1,1 +1,20 @@
-{"name":"laguna-pixel","version":"0.1.0","private":true,"type":"module","scripts":{"test":"node --test","start":"python3 -m http.server 8080"}}
+{
+  "name": "laguna-pixel",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "demo": "python3 -m http.server 8080",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "pg": "8.16.3"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.3.14"
+  }
+}

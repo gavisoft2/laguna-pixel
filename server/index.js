@@ -1,0 +1,12 @@
+import pg from 'pg';
+import {fileURLToPath} from 'node:url';
+import {Store} from './store.js';
+import {makeServer} from './http.js';
+const {BOT_TOKEN,DATABASE_URL,APP_URL,RENDER_EXTERNAL_URL,PORT='3000'}=process.env;
+if(!BOT_TOKEN||!DATABASE_URL)throw Error('Configura BOT_TOKEN y DATABASE_URL en el servidor.');
+const pool=new pg.Pool({connectionString:DATABASE_URL,max:10,connectionTimeoutMillis:10000});
+pool.on('error',e=>console.error('Database error:',e.code));
+const store=new Store(pool);await store.init();
+const server=makeServer({store,botToken:BOT_TOKEN,root:fileURLToPath(new URL('../',import.meta.url)),appUrl:APP_URL||RENDER_EXTERNAL_URL});
+server.listen(Number(PORT),'0.0.0.0',()=>console.log('Aqua View online: ready'));
+process.on('SIGTERM',()=>server.close(()=>pool.end().finally(()=>process.exit(0))));
