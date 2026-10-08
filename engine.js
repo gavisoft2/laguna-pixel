@@ -11,11 +11,12 @@ species.push({name:'Carpa jade',rarity:'Poco común',rate:20,color:'#91d58b'},{n
 species.push({name:'Pirarucú',rarity:'Raro',rate:16.25,color:'#a98977'},{name:'Piraña',rarity:'Épico',rate:20,color:'#e77953'});
 species.push({name:'Locha',rarity:'Común',rate:65,color:'#a99263'},{name:'Perca',rarity:'Raro',rate:81.25,color:'#91a765'},{name:'Pacú',rarity:'Épico',rate:100,color:'#c58363'},{name:'Esterlete',rarity:'Legendario',rate:260,color:'#9caaa8'});
 species.push({name:'Platija',rarity:'Común',rate:130,color:'#b19c77'},{name:'Pez cofre',rarity:'Raro',rate:162.5,color:'#e2c456'},{name:'Dorada',rarity:'Épico',rate:200,color:'#b5c4c8'},{name:'Mero gigante',rarity:'Legendario',rate:520,color:'#817a64'});
+species.push({name:'Atún rojo',rarity:'Raro',rate:325,color:'#658ca8'},{name:'Pez espada',rarity:'Raro',rate:325,color:'#777f9c'},{name:'Tiburón peregrino',rarity:'Épico',rate:400,color:'#929b9d'},{name:'Tiburón blanco',rarity:'Legendario',rate:1040,color:'#a6b3b5'},{name:'Ballena azul',rarity:'Legendario',rate:1040,color:'#638ca4'});
 export const zones=[
- {name:'Río',price:1300,weights:[80,0,0,0,0,15,5,0,0,0,0,0,0,0,0],speed:1,color:'#37bac5'},
- {name:'Lago',price:6500,weights:[0,0,0,0,0,0,0,60,30,9,1,0,0,0,0],speed:1.12,color:'#438cc6'},
- {name:'Costa',price:13000,weights:[0,0,0,0,0,0,0,0,0,0,0,30,50,15,5],speed:1.25,color:'#37bcb2'},
- {name:'Océano',price:26000,weights:[0,55,25,15,5,0,0,0,0,0,0,0,0,0,0],speed:1.4,color:'#286ba9'}
+ {name:'Río',price:1300,weights:[80,0,0,0,0,15,5,0,0,0,0,0,0,0,0,0,0,0,0,0],speed:1,color:'#37bac5'},
+ {name:'Lago',price:6500,weights:[0,0,0,0,0,0,0,60,30,9,1,0,0,0,0,0,0,0,0,0],speed:1.12,color:'#438cc6'},
+ {name:'Costa',price:13000,weights:[0,0,0,0,0,0,0,0,0,0,0,30,50,15,5,0,0,0,0,0],speed:1.25,color:'#37bcb2'},
+ {name:'Océano',price:26000,weights:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,35,35,22,4,4],speed:1.4,color:'#286ba9'}
 ];
 export function baitPrice(zone,count){if(!zones[zone]||![1,5,11].includes(count))throw Error('Paquete inválido');return zones[zone].price*(count===11?10:count);}
 export function rollFish(zone,random=Math.random){const z=zones[zone];if(!z)throw Error('Zona inválida');const roll=random()*100;let total=0;for(let i=0;i<z.weights.length;i++){total+=z.weights[i];if(roll<total)return i;}return 4;}
