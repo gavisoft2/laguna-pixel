@@ -33,3 +33,11 @@ Solo el ID configurado en `ADMIN_TELEGRAM_ID` recibe el botón **Entrar en prueb
 Tareas incluye el enlace https://t.me/+yglx16-VGRhkN2Vh y una recompensa única de 200 VIEW. Añadir @AquaViewGameBot como administrador de ese grupo y configurar `AQUA_GROUP_CHAT_ID` en Render con el ID numérico negativo del grupo (no el enlace de invitación ni el ID personal). El servidor usa getChatMember con la cuenta autenticada; solo acredita a miembros actuales, una vez por jugador. Solicitudes pendientes, miembros que salieron o fueron expulsados y errores de Telegram no reciben saldo. Sin configurar el ID se puede abrir el grupo pero no reclamar la recompensa. El modo de pruebas no muestra reclamación oficial. Documentación: https://core.telegram.org/bots/api#getchatmember
 
 Para obtener el ID sin compartir el token, el administrador puede añadir el bot al grupo, escribir `/grupo@AquaViewGameBot` allí y abrir **Tareas → Explorar → Obtener ID del grupo**. Esta consulta de metadatos del bot es exclusiva del administrador, no envía mensajes ni confirma actualizaciones. Si existe un webhook o no hay actualizaciones recientes, introducir el ID del grupo manualmente.
+
+## Referidos
+
+El botón Invitar del lateral derecho abre una ventana flotante. Cada cuenta tiene un enlace de la Mini App. El servidor valida el `start_param` firmado por Telegram y vincula únicamente cuentas nuevas a un invitador existente; la vinculación no cambia después.
+
+Se acumulan comisiones adicionales del 5%, 3% y 2% en tres niveles sobre el CASH que los jugadores recogen de sus peces. No se descuenta al jugador. Los depósitos, recompensas de tareas, cobros de comisiones y el modo de pruebas no generan comisiones. La atribución y acreditación se guardan en PostgreSQL dentro de la transacción de recogida, con referencias únicas para impedir duplicados.
+
+A partir de 1.000 CASH de referidos se puede transferir todo el saldo disponible a la billetera oficial; luego se aplican las condiciones de retiro habituales. La ventana muestra jugadores y ganancias acumuladas por nivel, saldo disponible, total generado y botones para compartir o copiar el enlace. Requiere que Main App esté configurada en BotFather.

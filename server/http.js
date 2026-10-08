@@ -2,9 +2,9 @@ import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
 import {verifyTelegram} from './auth.js';
-const files=new Set(['index.html','style.css','app.js','engine.js','online-client.js','fish-art.js','pond-art.js','payments.js','wallet.js','tasks.js']);
+const files=new Set(['index.html','style.css','app.js','engine.js','online-client.js','fish-art.js','pond-art.js','payments.js','wallet.js','tasks.js','referrals.js']);
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml'};
-export function makeServer({store,botToken,root,appUrl,finance=null,groupTask=null,paymentsEnabled=false,adminId='',clock=Date.now}){
+export function makeServer({store,botToken,root,appUrl,finance=null,groupTask=null,referrals=null,paymentsEnabled=false,adminId='',clock=Date.now}){
  const limits=new Map();const limiter=setInterval(()=>limits.clear(),60000);limiter.unref();
  const server=createServer(async(req,res)=>{
   res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');
@@ -29,6 +29,10 @@ export function makeServer({store,botToken,root,appUrl,finance=null,groupTask=nu
     }
     const token=req.headers.authorization?.replace(/^Bearer /,''),id=await store.identify(token,clock());if(!id)return json(401,{error:'Sesión caducada. Cierra y vuelve a abrir el juego.'});
     const count=(limits.get('player:'+id)||0)+1;limits.set('player:'+id,count);if(count>600)return json(429,{error:'Demasiadas solicitudes. Espera un minuto.'});
+    if(path.startsWith('/api/referrals')){
+     if(!store.official||!referrals)return json(503,{error:'Referidos no disponibles.'});
+     try{if(path==='/api/referrals'&&req.method==='GET')return json(200,await referrals.summary(id));if(path==='/api/referrals/collect'&&req.method==='POST')return json(200,await referrals.collect(id,clock()));return json(404,{error:'Operación no disponible.'});}catch(e){if(e.code)throw e;return json(400,{error:e.message});}
+    }
     if(path.startsWith('/api/tasks/group')){
      if(!store.official||!groupTask)return json(503,{error:'Tarea no disponible.'});
      try{

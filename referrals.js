@@ -1,0 +1,15 @@
+import {referralsOnline} from './online-client.js?v=referrals-39';
+const money=value=>(Number(value)/1e6).toLocaleString('es',{maximumFractionDigits:2});
+export function mountReferrals(panel,{online,testMode,onRefresh}){
+ if(!online||testMode){panel.innerHTML='<p>Los referidos están disponibles en tu cuenta oficial. Vuelve a ella para invitar amigos y consultar tus ganancias.</p>';return;}
+ panel.innerHTML='<p>Cargando tus referidos…</p>';
+ let busy=false;
+ async function render(){try{const data=await referralsOnline();if(!panel.isConnected)return;
+ panel.innerHTML=`<p class="referral-intro">Invita amigos y recibe comisiones del CASH que recojan de sus peces, sin descontarlo de sus ganancias.</p><section class="referral-total"><small>GANANCIAS DISPONIBLES</small><strong>${money(data.pendingMicros)} CASH</strong><button id="referral-collect" ${BigInt(data.pendingMicros)<1000000000n?'disabled':''}>Recoger · mínimo 1.000 CASH</button><small>Total generado: ${money(data.totalMicros)} CASH</small></section><div class="referral-levels">${data.levels.map(x=>`<section><div><strong>F${x.level} · ${x.count} ${x.count===1?'jugador':'jugadores'}</strong><small>${x.level===1?'Invitados directos':x.level===2?'Invitados de tus amigos':'Tercer nivel'}</small></div><span><b>${x.percent}%</b><small>${money(x.earnedMicros)} CASH</small></span></section>`).join('')}</div><p class="referral-note">El enlace vincula a los nuevos jugadores al entrar por primera vez. Las comisiones de los tres niveles se calculan al recoger CASH de peces.</p><label class="referral-link-label">Tu enlace<input id="referral-link" readonly></label><div class="referral-actions"><button id="referral-share">Invitar amigos</button><button id="referral-copy">Copiar enlace</button></div><p id="referral-message" role="status"></p>`;
+ const link=panel.querySelector('#referral-link');link.value=data.link;
+ panel.querySelector('#referral-share').onclick=()=>{const url='https://t.me/share/url?url='+encodeURIComponent(data.link)+'&text='+encodeURIComponent('¡Ven a pescar conmigo en Aqua View!');const tg=window.Telegram?.WebApp;if(tg?.openTelegramLink)tg.openTelegramLink(url);else window.open(url,'_blank','noopener');};
+ panel.querySelector('#referral-copy').onclick=async()=>{try{await navigator.clipboard.writeText(data.link);panel.querySelector('#referral-message').textContent='Enlace copiado.';}catch{link.focus();link.select();panel.querySelector('#referral-message').textContent='Mantén pulsado el enlace para copiarlo.';}};
+ panel.querySelector('#referral-collect').onclick=async()=>{if(busy)return;busy=true;const button=panel.querySelector('#referral-collect');button.disabled=true;try{const result=await referralsOnline(true);await onRefresh();await render();if(panel.isConnected)panel.querySelector('#referral-message').textContent=result.message;}catch(e){if(panel.isConnected){panel.querySelector('#referral-message').textContent=e.message;button.disabled=false;}}finally{busy=false;}};
+ }catch(e){if(panel.isConnected)panel.textContent=e.message;}}
+ void render();
+}

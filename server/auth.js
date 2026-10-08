@@ -12,5 +12,5 @@ export function verifyTelegram(initData,botToken,now=Date.now()){
  if(!Number.isInteger(date)||age>300||age< -30)throw Error('Sesión inicial caducada. Cierra y vuelve a abrir el juego.');
  let user;try{user=JSON.parse(fields.get('user'));}catch{}
  if(!user||!Number.isSafeInteger(user.id)||user.id<=0||typeof user.first_name!=='string')throw Error('Cuenta de Telegram inválida.');
- return {id:String(user.id),name:user.first_name.slice(0,100)};
+ return {id:String(user.id),name:user.first_name.slice(0,100),startParam:fields.get('start_param')||''};
 }
