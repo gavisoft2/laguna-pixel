@@ -143,6 +143,7 @@ let localProfile=null;try{localProfile=JSON.parse(localStorage.getItem('aqua-vie
 if(localProfile?.name)$('player-name').value=localProfile.name;
 const inTelegram=Boolean(telegram?.initData);
 onlineReady.then(()=>{
+ document.querySelector('#login-form > small').textContent=online?'El servidor verifica tu cuenta de Telegram al entrar. Tus saldos de prueba no tienen valor monetario.':'El progreso de esta demo se guarda en este dispositivo. Los saldos no tienen valor monetario.';
  if(online){$('name-label').hidden=true;$('player-name').required=false;$('login-submit').textContent='Entrar con Telegram';$('login-explanation').textContent='Tu progreso se guarda en tu cuenta de Telegram. Cuenta online de prueba; sin pagos reales.';}
  else if(inTelegram){$('name-label').hidden=true;$('player-name').required=false;$('login-submit').textContent='Continuar desde Telegram';$('login-explanation').textContent='Demo local: progreso guardado en este dispositivo.';}
  else $('player-name').required=true;
