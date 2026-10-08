@@ -1,4 +1,4 @@
-import {financeOnline} from './online-client.js?v=official-35';
+import {financeOnline} from './online-client.js?v=admin-test-36';
 const fmt=n=>Number(n).toLocaleString('es',{maximumFractionDigits:9});
 const labels={pending:'Pendiente',paid:'Pagado',rejected:'Rechazado'};
 export function mountWallet(panel,onRefresh){

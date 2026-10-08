@@ -23,3 +23,7 @@ La API valida la firma y antigüedad de `Telegram.WebApp.initData`, almacena ses
 `npm test` comprueba economía, seis meses de vida, autenticación, cuentas independientes, persistencia, contabilidad y verificación blockchain con casos de rechazo y duplicados. No utiliza pagos reales para los tests.
 
 La base gratuita de Render vence a los 30 días; migrar o mejorar su plan antes de la caducidad sin perder los datos. El servicio web gratuito puede dormir por inactividad. Documentación: https://render.com/docs/free
+
+## Pruebas exclusivas del administrador
+
+Solo el ID configurado en `ADMIN_TELEGRAM_ID` recibe el botón **Entrar en pruebas**. La partida separada comienza con 1,000,000 VIEW y cinco truchas; Billetera permite añadir otro millón de VIEW, con límite de mil millones. Comprar, pescar y recoger CASH en este modo solo modifica `admin_test_state`. No se transfieren VIEW, peces ni CASH a la partida oficial y no hay retiros de prueba. **Volver a cuenta oficial** recupera el estado oficial. El servidor rechaza las rutas de pruebas de cualquier otra cuenta, independientemente de lo que modifique el cliente.

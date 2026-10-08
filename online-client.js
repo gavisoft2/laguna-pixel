@@ -1,4 +1,6 @@
 let token=null;let queue=Promise.resolve();
+export let testMode=false;
+export function switchTestMode(enabled){return enqueue(async()=>{const data=await request(enabled?'/api/admin/test/state':'/api/state');testMode=enabled;return data;});}
 export let serverConfig={official:false,paymentsEnabled:false};
 export function financeOnline(route,body){return enqueue(async()=>{try{return await request('/api/finance/'+route,body);}catch(e){if(body&&e.message.startsWith('No hay conexión'))return request('/api/finance/'+route,body);throw e;}});}
 async function request(path,body){
@@ -12,10 +14,10 @@ export async function detectOnline(){
  const result=await request('/api/config');if(result.online!==true)throw Error('Configuración online no disponible.');serverConfig=result;return true;
 }
 export async function loginOnline(initData){const data=await request('/api/login',{initData});token=data.token;return data;}
-export function readOnline(){return enqueue(()=>request('/api/state'));}
+export function readOnline(){const path=testMode?'/api/admin/test/state':'/api/state';return enqueue(()=>request(path));}
 function enqueue(fn){const next=queue.then(fn);queue=next.catch(()=>{});return next;}
-export function actOnline(type,fields={}){const body={...fields,type,requestId:crypto.randomUUID()};return enqueue(async()=>{
+export function actOnline(type,fields={}){const path=testMode?'/api/admin/test/action':'/api/action',body={...fields,type,requestId:crypto.randomUUID()};return enqueue(async()=>{
  // Reuse the key after an ambiguous network failure: the server never applies it twice.
- try{return await request('/api/action',body);}catch(e){if(e.message.startsWith('No hay conexión'))return request('/api/action',body);throw e;}
+ try{return await request(path,body);}catch(e){if(e.message.startsWith('No hay conexión'))return request(path,body);throw e;}
 });}
-export async function logoutOnline(){try{await enqueue(()=>request('/api/logout',{}));}finally{token=null;}}
+export async function logoutOnline(){try{await enqueue(()=>request('/api/logout',{}));}finally{token=null;testMode=false;}}

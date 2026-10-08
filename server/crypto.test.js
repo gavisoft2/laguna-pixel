@@ -35,5 +35,20 @@ test('official economy starts at zero, preserves trial, credits once, ledger tra
   await db.query('UPDATE finance_accounts SET cash_micros=$1 WHERE player_id=123',['1300000000']);const wid=randomUUID();await finance.requestWithdrawal('123',wid,'ton','0.1',treasury,now);assert.equal(String((await finance.balances('123')).held_cash_micros),'1300000000');
   assert.equal((await api('finance/admin/paid',{requestId:wid,hash},bob.token)).status,403);rejectProof=true;await assert.rejects(()=>finance.paidWithdrawal(wid,hash));assert.equal((await finance.pending()).length,1);rejectProof=false;receipt='e'.repeat(64);await finance.paidWithdrawal(wid,receipt);assert.equal(String((await finance.balances('123')).held_cash_micros),'0');await assert.rejects(()=>finance.rejectWithdrawal('123',wid));await assert.rejects(()=>finance.paidWithdrawal(wid,receipt));
   assert.equal((await api('finance/admin',null,bob.token)).status,404);assert.equal((await api('finance/admin',null,alice.token)).status,200);
+  // Test mode is checked on the server, not just hidden in the UI.
+  assert.equal((await api('admin/test/state',null,bob.token)).status,403);
+  const topup={type:'topup',requestId:randomUUID()};
+  assert.equal((await api('admin/test/action',topup,bob.token)).status,403);
+  assert.equal((await api('action',{...topup,testMode:true},alice.token)).status,400);
+  const sandbox=(await api('admin/test/state',null,alice.token));assert.equal(sandbox.status,200);assert.equal(sandbox.data.state.fin,1000000);
+  await api('admin/test/action',topup,alice.token);await api('admin/test/action',topup,alice.token);
+  assert.equal((await api('admin/test/state',null,alice.token)).data.state.fin,2000000);
+  const testBuy={type:'buy',zone:3,count:11,requestId:randomUUID()};await api('admin/test/action',testBuy,alice.token);
+  assert.equal((await api('admin/test/state',null,alice.token)).data.state.baits[3],11);
+  assert.equal((await api('state',null,alice.token)).data.state.baits[3],0);
+  const sandboxState=(await db.query('SELECT admin_test_state FROM players WHERE id=123')).rows[0].admin_test_state;sandboxState.cash=99999999;sandboxState.pending=100000;await db.query('UPDATE players SET admin_test_state=$1 WHERE id=123',[JSON.stringify(sandboxState)]);
+  await api('admin/test/action',{type:'collect',requestId:randomUUID()},alice.token);
+  assert.equal(String((await finance.balances('123')).cash_micros),'0');assert.equal(String((await finance.balances('123')).view_balance),'0');
+  assert.equal((await api('finance/withdraw',{requestId:randomUUID(),network:'ton',amount:'0.1',address:treasury},alice.token)).status,400);
  }finally{await new Promise(r=>server.close(r));await db.close();}
 });

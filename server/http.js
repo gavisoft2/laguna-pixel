@@ -25,10 +25,18 @@ export function makeServer({store,botToken,root,appUrl,finance=null,paymentsEnab
     }
     if(path==='/api/login'&&req.method==='POST'){
      let user;try{user=verifyTelegram(body.initData,botToken,clock());}catch(e){return json(401,{error:e.message});}
-     return json(200,await store.login(user,clock()));
+     return json(200,{...await store.login(user,clock()),admin:user.id===adminId});
     }
     const token=req.headers.authorization?.replace(/^Bearer /,''),id=await store.identify(token,clock());if(!id)return json(401,{error:'Sesión caducada. Cierra y vuelve a abrir el juego.'});
     const count=(limits.get('player:'+id)||0)+1;limits.set('player:'+id,count);if(count>600)return json(429,{error:'Demasiadas solicitudes. Espera un minuto.'});
+    if(path.startsWith('/api/admin/test/')){
+     if(!adminId||id!==adminId)return json(403,{error:'Modo de pruebas exclusivo del administrador.'});
+     try{
+      if(path==='/api/admin/test/state'&&req.method==='GET')return json(200,await store.read(id,clock(),true));
+      if(path==='/api/admin/test/action'&&req.method==='POST')return json(200,await store.act(id,body,clock(),true));
+      return json(404,{error:'Operación no disponible.'});
+     }catch(e){if(e.code)throw e;return json(400,{error:e.message});}
+    }
     if(path.startsWith('/api/finance/')){
      if(!store.official||!finance)return json(503,{error:'Billetera oficial no disponible.'});
      try{
