@@ -1,4 +1,4 @@
-import {groupTaskOnline,discoverGroupOnline} from './online-client.js?v=referrals-39';
+import {groupTaskOnline,discoverGroupOnline} from './online-client.js?v=admin-reports-40';
 let selected='routine';
 export function renderTasks(panel,{state,online,testMode,admin=false,onDaily,onRefresh}){
  let group={claimed:false,configured:false},loading=online&&!testMode,notice='';

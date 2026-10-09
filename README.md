@@ -41,3 +41,11 @@ El botón Invitar del lateral derecho abre una ventana flotante. Cada cuenta tie
 Se acumulan comisiones adicionales del 5%, 3% y 2% en tres niveles sobre el CASH que los jugadores recogen de sus peces. No se descuenta al jugador. Los depósitos, recompensas de tareas, cobros de comisiones y el modo de pruebas no generan comisiones. La atribución y acreditación se guardan en PostgreSQL dentro de la transacción de recogida, con referencias únicas para impedir duplicados.
 
 A partir de 1.000 CASH de referidos se puede transferir todo el saldo disponible a la billetera oficial; luego se aplican las condiciones de retiro habituales. La ventana muestra jugadores y ganancias acumuladas por nivel, saldo disponible, total generado y botones para compartir o copiar el enlace. Requiere que Main App esté configurada en BotFather.
+
+## Registros del administrador
+
+El botón Administración aparece únicamente para ADMIN_TELEGRAM_ID y abre un panel flotante. La API GET /api/admin/reports comprueba ese ID autenticado en cada consulta. Hay resumen y listas paginadas de jugadores, depósitos, retiros, entradas y movimientos de la billetera oficial. No se exponen sesiones, credenciales ni saldos del modo de pruebas.
+
+El resumen cuenta depósitos confirmados por la blockchain y mantiene separados TON y USDT; los pedidos pendientes no se cuentan como dinero recibido. Los retiros muestran la comisión y el importe neto. Las horas se muestran en America/Santo_Domingo y los indicadores de actividad/nuevos cubren las últimas 24 horas. El panel es de consulta; el procesamiento de retiros continúa en Billetera.
+
+La migración añade fechas de registro, última entrada y última actividad, y una tabla de entradas verificadas. La actividad se actualiza como máximo una vez por minuto por jugador. Las fechas de cuentas antiguas que no se guardaron permanecen desconocidas; no se inventa un historial previo. No requiere nuevas variables de entorno.

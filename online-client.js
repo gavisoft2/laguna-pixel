@@ -24,3 +24,5 @@ export function actOnline(type,fields={}){const path=testMode?'/api/admin/test/a
  try{return await request(path,body);}catch(e){if(e.message.startsWith('No hay conexión'))return request(path,body);throw e;}
 });}
 export async function logoutOnline(){try{await enqueue(()=>request('/api/logout',{}));}finally{token=null;testMode=false;}}
+
+export function adminOnline(section='summary',page=0){return enqueue(()=>request('/api/admin/reports?section='+encodeURIComponent(section)+'&page='+page));}

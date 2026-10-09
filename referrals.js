@@ -1,4 +1,4 @@
-import {referralsOnline} from './online-client.js?v=referrals-39';
+import {referralsOnline} from './online-client.js?v=admin-reports-40';
 const money=value=>(Number(value)/1e6).toLocaleString('es',{maximumFractionDigits:2});
 export function mountReferrals(panel,{online,testMode,onRefresh}){
  if(!online||testMode){panel.innerHTML='<p>Los referidos están disponibles en tu cuenta oficial. Vuelve a ella para invitar amigos y consultar tus ganancias.</p>';return;}

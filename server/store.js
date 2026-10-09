@@ -1,4 +1,4 @@
-import {createHash,randomBytes} from 'node:crypto';
+import {createHash,randomBytes,randomUUID} from 'node:crypto';
 import {newPlayer,advance,applyAction,publicState} from './game.js';
 const testPlayer=now=>({...newPlayer(now),fin:208000,cash:0,pending:0,fish:[],fishCaughtAt:[],testSetup:2});
 const digest=token=>createHash('sha256').update(token).digest('hex');
@@ -13,18 +13,25 @@ export class Store {
   ALTER TABLE players ADD COLUMN IF NOT EXISTS admin_test_state JSONB;
   ALTER TABLE players ADD COLUMN IF NOT EXISTS referrer_id BIGINT REFERENCES players(id);
   CREATE INDEX IF NOT EXISTS players_referrer ON players(referrer_id);
+  ALTER TABLE players ADD COLUMN IF NOT EXISTS registered_at BIGINT;
+  ALTER TABLE players ADD COLUMN IF NOT EXISTS last_login_at BIGINT;
+  ALTER TABLE players ADD COLUMN IF NOT EXISTS last_seen_at BIGINT;
+  CREATE TABLE IF NOT EXISTS player_logins(id UUID PRIMARY KEY,player_id BIGINT NOT NULL REFERENCES players(id),created_at BIGINT NOT NULL);
+  CREATE INDEX IF NOT EXISTS player_logins_time ON player_logins(created_at);
+  CREATE INDEX IF NOT EXISTS players_last_seen ON players(last_seen_at);
  `;for(const sql of schema.split(';').filter(x=>x.trim()))await this.pool.query(sql);}
  async login(user,now=Date.now()){
   const token=randomBytes(32).toString('hex');
   const match=/^ref_([1-9]\d{0,15})$/.exec(user.startParam||''),parent=match?.[1]||null;
-  await this.pool.query('INSERT INTO players(id,name,state,referrer_id) VALUES($1,$2,$3,(SELECT id FROM players WHERE id=$4 AND id<>$1)) ON CONFLICT(id) DO UPDATE SET name=EXCLUDED.name',[user.id,user.name,JSON.stringify(newPlayer(now)),parent]);
+  await this.pool.query('INSERT INTO players(id,name,state,referrer_id,registered_at,last_login_at,last_seen_at) VALUES($1,$2,$3,(SELECT id FROM players WHERE id=$4 AND id<>$1),$5,$5,$5) ON CONFLICT(id) DO UPDATE SET name=EXCLUDED.name,last_login_at=EXCLUDED.last_login_at,last_seen_at=EXCLUDED.last_seen_at',[user.id,user.name,JSON.stringify(newPlayer(now)),parent,now]);
+  await this.pool.query('INSERT INTO player_logins(id,player_id,created_at) VALUES($1,$2,$3)',[randomUUID(),user.id,now]);
   await this.pool.query('DELETE FROM sessions WHERE expires_at<$1',[now]);
   await this.pool.query('INSERT INTO sessions(digest,player_id,expires_at) VALUES($1,$2,$3)',[digest(token),user.id,now+86400000]);
   return {token,name:user.name,playerId:user.id,official:this.official,...await this.read(user.id,now)};
  }
  async identify(token,now=Date.now()){
   if(typeof token!=='string'||! /^[a-f0-9]{64}$/.test(token))return null;
-  const r=await this.pool.query('SELECT player_id FROM sessions WHERE digest=$1 AND expires_at>$2',[digest(token),now]);return r.rows[0]?.player_id?.toString()||null;
+  const r=await this.pool.query('SELECT player_id FROM sessions WHERE digest=$1 AND expires_at>$2',[digest(token),now]);const id=r.rows[0]?.player_id?.toString()||null;if(id)await this.pool.query('UPDATE players SET last_seen_at=$2 WHERE id=$1 AND (last_seen_at IS NULL OR last_seen_at<$3)',[id,now,now-60000]);return id;
  }
  async logout(token){if(typeof token==='string')await this.pool.query('DELETE FROM sessions WHERE digest=$1',[digest(token)]);}
  async transact(id,body,now,testMode=false){

@@ -1,0 +1,29 @@
+import {adminOnline} from './online-client.js?v=admin-reports-40';
+const fmt=n=>Number(n||0).toLocaleString('es',{maximumFractionDigits:9});
+const date=n=>n?new Date(Number(n)).toLocaleString('es-DO',{timeZone:'America/Santo_Domingo',dateStyle:'short',timeStyle:'short'}):'Sin registro';
+const amount=(units,network)=>fmt(Number(units||0)/(network==='ton'?1e9:1e6))+' '+(network==='ton'?'TON (Gram)':'USDT');
+export function mountAdmin(panel){
+ let section='summary',page=0,loading=false,revision=0;
+ panel.innerHTML='<p class="admin-note">Registros oficiales · Hora de República Dominicana. La actividad y las entradas se registran desde esta actualización. Un pedido pendiente no confirma que se haya recibido dinero.</p><div class="admin-tabs"></div><button id="admin-refresh">Actualizar registros</button><p id="admin-status" role="status"></p><div class="admin-content"></div><div class="admin-pagination"></div>';
+ const q=s=>panel.querySelector(s),tabs=q('.admin-tabs'),content=q('.admin-content');
+ const sections=[['summary','Resumen'],['players','Jugadores'],['deposits','Depósitos'],['withdrawals','Retiros'],['logins','Entradas'],['events','Movimientos']];
+ for(const [key,label] of sections){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{section=key;page=0;void load();};b.dataset.section=key;tabs.append(b);}
+ function row(lines){const card=document.createElement('section');card.className='admin-record';for(const [label,value] of lines){const p=document.createElement('p'),b=document.createElement('strong');b.textContent=label+': ';p.append(b,document.createTextNode(String(value)));card.append(p);}content.append(card);}
+ async function load(){const current=++revision;loading=true;q('#admin-refresh').disabled=true;q('#admin-status').textContent='Consultando registros…';try{const data=await adminOnline(section,page);if(!panel.isConnected||current!==revision)return;content.replaceChildren();q('.admin-pagination').replaceChildren();tabs.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.section===section));
+ if(section==='summary'){
+  row([['Jugadores registrados',fmt(data.players.total)],['Activos en últimas 24 h',fmt(data.players.active_today)],['Nuevos en últimas 24 h',fmt(data.players.new_today)]]);
+  for(const network of ['ton','usdt']){const paid=data.deposits.find(d=>d.network===network&&d.status==='paid'),pending=data.deposits.find(d=>d.network===network&&d.status==='pending');row([['Moneda',network==='ton'?'TON (Gram)':'USDT en TON'],['Depósitos confirmados',fmt(paid?.count)],['Total recibido confirmado',amount(paid?.units,network)],['VIEW acreditados por depósitos',fmt(paid?.view_amount)],['Pedidos sin confirmar',fmt(pending?.count)]]);const sent=data.withdrawals.find(w=>w.network===network&&w.status==='paid'),waiting=data.withdrawals.find(w=>w.network===network&&w.status==='pending');row([['Retiros pagados',fmt(sent?.count)],['Total enviado',amount(sent?.units,network)],['Retiros pendientes',fmt(waiting?.count)],['Importe pendiente de envío',amount(waiting?.units,network)]]);}
+ }else{
+ if(!data.rows.length)row([['Registro','Todavía no hay datos en esta sección.']]);
+ for(const r of data.rows){const who=r.name+' · ID '+(r.player_id||r.id);if(section==='players')row([['Jugador',who],['Registrado',date(r.registered_at)],['Última entrada',date(r.last_login_at)],['Última actividad',date(r.last_seen_at)],['VIEW oficiales',fmt(r.view_balance)],['CASH oficiales',fmt(Number(r.cash_micros)/1e6)],['CASH reservados',fmt(Number(r.held_cash_micros)/1e6)],['Peces oficiales',fmt(r.fish_count)],['Depósitos confirmados',fmt(r.confirmed_deposits)],['Invitador',r.referrer_id||'Ninguno']]);
+ else if(section==='logins')row([['Jugador',who],['Entró al juego',date(r.created_at)]]);
+ else if(section==='deposits')row([['Jugador',who],['Importe',amount(r.units,r.network)],['VIEW',fmt(r.view_amount)],['Estado',r.status==='paid'?'Confirmado y acreditado':'Pedido pendiente de confirmar'],['Creado',date(r.created_at)],['Confirmado',date(r.confirmed_at)],['Pedido',r.id],['Transacción',r.hash||'Sin confirmación']]);
+ else if(section==='withdrawals')row([['Jugador',who],['Estado',({paid:'Pagado',pending:'Pendiente',rejected:'Rechazado'})[r.status]||r.status],['Solicitado',amount(r.requested_units,r.network)],['Comisión',amount(r.fee_units,r.network)],['Envío neto',amount(r.net_units,r.network)],['CASH',fmt(Number(r.cash_micros)/1e6)],['Creado',date(r.created_at)],['Pagado',date(r.paid_at)],['Destino',r.destination],['Solicitud',r.id],['Transacción',r.hash||'Sin pago confirmado']]);
+ else row([['Jugador',who],['Operación',({crypto_deposit:'Depósito confirmado',game_buy:'Compra de cebos',game_daily:'Recompensa diaria',game_collect:'Recogida de CASH',referral_collect:'Cobro de referidos',group_task:'Tarea del grupo',withdrawal_requested:'Solicitud de retiro',withdrawal_paid:'Retiro pagado',withdrawal_rejected:'Retiro rechazado'})[r.kind]||r.kind],['Fecha',date(r.created_at)],['Cambio VIEW',fmt(r.view_delta)],['Cambio CASH',fmt(Number(r.cash_delta)/1e6)],['Cambio CASH reservado',fmt(Number(r.held_delta)/1e6)],['Referencia',r.reference]]);
+ }
+ const nav=q('.admin-pagination');if(page>0){const prev=document.createElement('button');prev.textContent='Anterior';prev.onclick=()=>{page--;void load();};nav.append(prev);}if(data.hasMore){const next=document.createElement('button');next.textContent='Siguiente';next.onclick=()=>{page++;void load();};nav.append(next);}
+ }
+ q('#admin-status').textContent='Actualizado: '+date(data.generatedAt)+(section==='summary'?'':' · Página '+(page+1));
+ }catch(e){if(panel.isConnected&&current===revision)q('#admin-status').textContent=e.message;}finally{if(current===revision){loading=false;if(panel.isConnected)q('#admin-refresh').disabled=false;}}}
+ q('#admin-refresh').onclick=()=>{if(!loading)void load();};void load();
+}
