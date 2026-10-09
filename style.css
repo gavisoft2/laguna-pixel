@@ -154,3 +154,5 @@ nav{position:sticky;bottom:max(8px,env(safe-area-inset-bottom));z-index:5;margin
 .admin-note{font-size:11px;line-height:1.5}.admin-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}.admin-tabs button{padding:9px 3px;font-size:11px}.admin-tabs button.active{background:#247e7b;color:#fff}.admin-record{padding:12px;border:1px solid #bca578;border-radius:12px;background:#fff7e4;margin:10px 0;overflow-wrap:anywhere}.admin-record p{font-size:11px;line-height:1.5;margin:5px 0}.admin-pagination{display:flex;gap:8px}.admin-pagination button{flex:1;padding:10px;font-size:12px}#admin-status{font-size:11px}#admin-refresh{padding:10px;font-size:12px}
 
 .preferences{flex-wrap:wrap}
+
+.startup-status{font-size:12px!important;line-height:1.5;min-height:18px}.welcome-content .startup-status{color:#c8eeea;margin:8px 0}.login-card .startup-status{color:#257b77}

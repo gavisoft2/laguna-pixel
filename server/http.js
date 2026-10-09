@@ -15,7 +15,13 @@ export function makeServer({store,botToken,root,appUrl,finance=null,groupTask=nu
    if(path.startsWith('/api/')||path==='/healthz'){
     if(path==='/healthz'){await store.pool.query('SELECT 1');return json(200,{ok:true});}
     const origin=req.headers.origin,expected=appUrl?new URL(appUrl).origin:null;
-    if(origin&&expected&&origin!==expected)return json(403,{error:'Origen no permitido.'});
+    const allowedOrigin=origin&&(origin===expected||origin==='https://gavisoft2.github.io');
+    if(origin&&expected&&!allowedOrigin)return json(403,{error:'Origen no permitido.'});
+    if(allowedOrigin){res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin');}
+    if(req.method==='OPTIONS'){
+     if(!allowedOrigin)return json(403,{error:'Origen no permitido.'});
+     res.writeHead(204,{'Access-Control-Allow-Methods':'GET, POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Authorization','Access-Control-Max-Age':'600'});return res.end();
+    }
     if(path==='/api/login'){const bucket='login:'+req.socket.remoteAddress,n=(limits.get(bucket)||0)+1;limits.set(bucket,n);if(n>100)return json(429,{error:'Demasiadas solicitudes. Espera un minuto.'});}
     if(path==='/api/config'&&req.method==='GET')return json(200,{online:true,official:store.official,paymentsEnabled:Boolean(paymentsEnabled&&finance&&adminId)});
     let body={};if(req.method==='POST'){

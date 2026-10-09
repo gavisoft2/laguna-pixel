@@ -14,7 +14,7 @@ TON (Gram) y USDT exclusivamente en TON. Verificación blockchain, recibos únic
 
 Consultar [PAYMENTS-SETUP.md](PAYMENTS-SETUP.md) para instrucciones, tasas, comentario obligatorio de cada pedido y procedimiento de envío manual. El código no firma ni envía criptomonedas automáticamente. Comprobar una recarga y un retiro reales tras desplegar antes de anunciar la apertura.
 
-Los saldos y peces de prueba permanecen archivados y no se convierten en dinero real. El juego oficial usa `official_state` y la cuenta contable PostgreSQL. GitHub Pages conserva una demo local independiente; usar la URL de Render en Telegram.
+Los saldos y peces de prueba permanecen archivados y no se convierten en dinero real. El juego oficial usa `official_state` y la cuenta contable PostgreSQL. GitHub Pages sirve la entrada oficial de Telegram y utiliza la API de Render. La demo independiente queda disponible solo en archivos locales o localhost/?demo=1.
 
 ## Operación y validación
 
@@ -49,3 +49,11 @@ El botón Administración aparece únicamente para ADMIN_TELEGRAM_ID y abre un p
 El resumen cuenta depósitos confirmados por la blockchain y mantiene separados TON y USDT; los pedidos pendientes no se cuentan como dinero recibido. Los retiros muestran la comisión y el importe neto. Las horas se muestran en America/Santo_Domingo y los indicadores de actividad/nuevos cubren las últimas 24 horas. El panel es de consulta; el procesamiento de retiros continúa en Billetera.
 
 La migración añade fechas de registro, última entrada y última actividad, y una tabla de entradas verificadas. La actividad se actualiza como máximo una vez por minuto por jugador. Las fechas de cuentas antiguas que no se guardaron permanecen desconocidas; no se inventa un historial previo. No requiere nuevas variables de entorno.
+
+## Entrada sin la pantalla de arranque de Render
+
+La URL pública de la Mini App es https://gavisoft2.github.io/laguna-pixel/ . GitHub Pages sirve la portada y los archivos del juego sin depender del arranque del servidor. En ese dominio el cliente llama únicamente a https://aqua-view.onrender.com para el login, progreso y pagos oficiales. La API permite CORS únicamente para ese origen estático y el origen configurado del servidor. No requiere variables nuevas.
+
+El inicio reintenta automáticamente durante hasta 90 segundos si el servidor devuelve su página HTML de arranque o falla la red. La portada muestra el estado de conexión; al pulsar Comenzar aventura en Telegram el login continúa cuando el servidor responde, sin actualizar la página. No convierte fallos de conexión en cuentas de prueba. La demo local sigue disponible únicamente con file: o localhost/?demo=1.
+
+Tras desplegar backend y frontend, actualizar en BotFather tanto Main App como Menu Button a la URL de GitHub Pages. La cuenta, sus registros y pagos continúan en la misma base de datos. El plan gratuito de Render puede seguir tardando al despertar; cambiar la portada evita su pantalla, no elimina esa espera del backend.

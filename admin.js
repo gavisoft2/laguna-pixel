@@ -1,4 +1,4 @@
-import {adminOnline} from './online-client.js?v=admin-reports-40';
+import {adminOnline} from './online-client.js?v=instant-entry-41';
 const fmt=n=>Number(n||0).toLocaleString('es',{maximumFractionDigits:9});
 const date=n=>n?new Date(Number(n)).toLocaleString('es-DO',{timeZone:'America/Santo_Domingo',dateStyle:'short',timeStyle:'short'}):'Sin registro';
 const amount=(units,network)=>fmt(Number(units||0)/(network==='ton'?1e9:1e6))+' '+(network==='ton'?'TON (Gram)':'USDT');

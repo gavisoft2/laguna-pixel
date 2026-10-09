@@ -1,11 +1,12 @@
-import {mountAdmin} from './admin.js?v=admin-reports-40';
-import {mountReferrals} from './referrals.js?v=admin-reports-40';
-import {detectOnline,loginOnline,readOnline,actOnline,logoutOnline,serverConfig,testMode,switchTestMode} from './online-client.js?v=admin-reports-40';
-import {renderTasks} from './tasks.js?v=admin-reports-40';
-import {mountWallet} from './wallet.js?v=admin-reports-40';
+import {mountAdmin} from './admin.js?v=instant-entry-41';
+import {mountReferrals} from './referrals.js?v=instant-entry-41';
+import {detectOnline,loginOnline,readOnline,actOnline,logoutOnline,serverConfig,testMode,switchTestMode} from './online-client.js?v=instant-entry-41';
+import {renderTasks} from './tasks.js?v=instant-entry-41';
+import {mountWallet} from './wallet.js?v=instant-entry-41';
 let playerAdmin=false;
 let online=false,authenticated=false,connectionError='',remoteBusy=false;
-const onlineReady=detectOnline().then(value=>{online=value;}).catch(e=>{online=true;connectionError=e.message;});
+function startupProgress(message){document.querySelectorAll('[data-server-status]').forEach(p=>p.textContent=message);}
+const onlineReady=detectOnline(startupProgress).then(value=>{online=value;}).catch(e=>{online=true;connectionError=e.message;});
 import {drawPond} from './pond-art.js?v=living-pond-28';
 import {drawFish,fishPortrait} from './fish-art.js?v=species-art-27';
 import {depositQuote,withdrawQuote} from './payments.js';
@@ -152,18 +153,19 @@ onlineReady.then(()=>{
  document.querySelector('.welcome-content > small').textContent=online?'Tu aventura en Aqua View':'Demo local';
  if(online){$('name-label').hidden=true;$('player-name').required=false;$('login-submit').textContent='Entrar con Telegram';$('login-explanation').textContent='Tu progreso se guarda en tu cuenta de Telegram. Compra VIEW para conseguir cebos y llenar tu estanque.';}
  else if(inTelegram){$('name-label').hidden=true;$('player-name').required=false;$('login-submit').textContent='Continuar desde Telegram';$('login-explanation').textContent='Demo local: progreso guardado en este dispositivo.';}
- else $('player-name').required=true;
+ else {$('name-label').hidden=false;$('player-name').required=true;$('login-explanation').textContent='Crea un perfil local para probar el juego. No necesitas contraseña.';}
 });
-$('open-login').onclick=()=>{loginForm.hidden=false;document.querySelector('.welcome-content').hidden=true;if(!inTelegram&&!online)$('player-name').focus();};
+$('open-login').onclick=()=>{loginForm.hidden=false;document.querySelector('.welcome-content').hidden=true;if(!inTelegram&&!online)$('player-name').focus();if(inTelegram)loginForm.requestSubmit();};
 $('login-back').onclick=()=>{loginForm.hidden=true;document.querySelector('.welcome-content').hidden=false;};
+let loginPending=false;
 loginForm.onsubmit=async e=>{
- e.preventDefault();$('login-error').textContent='';$('login-submit').disabled=true;
+ e.preventDefault();if(loginPending)return;loginPending=true;$('login-error').textContent='';$('login-submit').disabled=true;
  try{
-  await onlineReady;if(connectionError){online=await detectOnline();connectionError='';}let name;
+  await onlineReady;if(connectionError){online=await detectOnline(startupProgress);connectionError='';}let name;
   if(online){if(!inTelegram)throw Error('Abre Aqua View desde @AquaViewGameBot para entrar con tu cuenta.');const data=await loginOnline(telegram.initData);state=data.state;name=data.name;authenticated=true;playerAdmin=Boolean(data.admin);testButton.hidden=!data.admin;adminButton.hidden=!data.admin;testButton.textContent='Entrar en pruebas';render();document.querySelector('.badge').textContent=serverConfig.official?'CUENTA OFICIAL · AQUA VIEW':'PRUEBA ONLINE · SIN PAGOS REALES';}
   else {name=inTelegram?'Pescador de Telegram':$('player-name').value.trim();if(name.length<2)throw Error('Escribe un nombre de al menos 2 caracteres.');try{localStorage.setItem('aqua-view-profile',JSON.stringify({name}));}catch{}}
   welcome.hidden=true;gameScreen.hidden=false;document.body.classList.remove('at-welcome');$('status').textContent='Bienvenido, '+name+'. Tu estanque te espera.';window.scrollTo(0,0);
- }catch(e){$('login-error').textContent=e.message;}finally{$('login-submit').disabled=false;}
+ }catch(e){$('login-error').textContent=e.message;}finally{loginPending=false;$('login-submit').disabled=false;}
 };
 const testButton=document.createElement('button');testButton.hidden=true;testButton.textContent='Entrar en pruebas';testButton.onclick=async()=>{if(remoteBusy||session)return;remoteBusy=true;testButton.disabled=true;try{const data=await switchTestMode(!testMode);state=data.state;$('wallet-overlay')?.closePanel?.();render();document.querySelector('.badge').textContent=testMode?'PRUEBAS ADMIN · SIN RETIROS':'CUENTA OFICIAL · AQUA VIEW';testButton.textContent=testMode?'Volver a cuenta oficial':'Entrar en pruebas';$('status').textContent=testMode?'Modo de pruebas: saldo separado y no retirable.':'Volviste a tu cuenta oficial.';}catch(e){$('status').textContent=e.message;}finally{remoteBusy=false;testButton.disabled=false;}};options.append(testButton);
 const adminButton=document.createElement('button');adminButton.id='admin-records';adminButton.hidden=true;adminButton.textContent='Administración';adminButton.onclick=()=>{if(online&&playerAdmin)openWallet('admin');};options.append(adminButton);
